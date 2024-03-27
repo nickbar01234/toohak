@@ -7,5 +7,7 @@
     "editor.formatOnSave": true,
     "editor.wordBasedSuggestions": "off",
     "editor.defaultFormatter": "ms-python.autopep8"
-  }
+  },
+
+  "pylint.args": ["--disable=C0114,C0115,C0116", "--max-line-length=120"]
 }

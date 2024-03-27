@@ -5,15 +5,15 @@ from .type import MultipleChoiceSolution
 class MultipleChoiceSolutionBuilder(AbstractSolutionBuilder):
     def __init__(self):
         super().__init__()
-        self.solutions = set()
+        self.__solutions = set()
 
     def add_solution(self, option):
-        self.solutions.add(option)
+        self.__solutions.add(option)
         return self
 
     def remove_solution(self, option):
-        self.solutions.remove(option)
+        self.__solutions.remove(option)
         return self
 
     def build(self):
-        return MultipleChoiceSolution(list(self.solutions))
+        return MultipleChoiceSolution(list(self.__solutions))

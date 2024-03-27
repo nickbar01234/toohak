@@ -15,7 +15,7 @@ class AbstractSolution(AbstractSerializable):
     @abstractmethod
     def serialize(self) -> str:
         '''
-        Convert instance to string.
+        Convert instance to bytecode.
         '''
 
     def get_solution(self):

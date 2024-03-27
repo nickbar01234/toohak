@@ -1,3 +1,4 @@
+import pickle
 from .abstract_solution import AbstractSolution
 
 
@@ -9,4 +10,4 @@ class MultipleChoiceSolution(AbstractSolution):
         return isinstance(solution, MultipleChoiceSolution) and self.get_solution() == solution.get_solution()
 
     def serialize(self):
-        return str(self.get_solution())
+        return pickle.dumps(self)

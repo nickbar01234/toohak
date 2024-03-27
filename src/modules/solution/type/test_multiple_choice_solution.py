@@ -1,4 +1,5 @@
 import unittest
+import pickle
 from .multiple_choice_solution import MultipleChoiceSolution
 
 
@@ -20,5 +21,6 @@ class TestMultipleChoiceSolution(unittest.TestCase):
         self.assertFalse(gt.verify(answer))
 
     def test_solution_serialize(self):
-        self.assertEqual(MultipleChoiceSolution(
-            self.SOLUTION).serialize(), "['A', 'B', 'C', 'D']")
+        instance = pickle.loads(
+            MultipleChoiceSolution(self.SOLUTION).serialize())
+        self.assertTrue(MultipleChoiceSolution(self.SOLUTION).verify(instance))
