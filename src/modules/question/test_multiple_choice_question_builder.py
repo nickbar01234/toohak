@@ -13,4 +13,4 @@ class TestMultipleChoiceQuestionBuilder(unittest.TestCase):
         self.assertEqual(q1, q2)
 
     def test_missing_kwargs_throw_error(self):
-        self.assertRaises(Exception, MultipleQuestionBuilder.build)
+        self.assertRaises(Exception, MultipleQuestionBuilder().build)
