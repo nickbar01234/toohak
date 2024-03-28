@@ -1,1 +1,2 @@
-from . import solution
+from .solution import *
+from .question import *
