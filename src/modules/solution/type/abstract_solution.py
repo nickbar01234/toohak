@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import pygame
 from ...serializable.abstract_serializable import AbstractSerializable
 
 
@@ -13,9 +14,15 @@ class AbstractSolution(AbstractSerializable):
         '''
 
     @abstractmethod
-    def serialize(self) -> str:
+    def serialize(self) -> bytes:
         '''
         Convert instance to bytecode.
+        '''
+
+    @abstractmethod
+    def draw(self, game: pygame):
+        '''
+        Given a pygame instance, draw the solution
         '''
 
     def get_solution(self):

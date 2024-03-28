@@ -11,3 +11,6 @@ class MultipleChoiceSolution(AbstractSolution):
 
     def serialize(self):
         return pickle.dumps(self)
+
+    def draw(self, game):
+        return
