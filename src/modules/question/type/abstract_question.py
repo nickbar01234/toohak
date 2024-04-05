@@ -1,7 +1,7 @@
 from abc import abstractmethod
-import pygame
+from pygame import Surface
 from ...serializable.abstract_serializable import AbstractSerializable
-from ... import AbstractSolution
+from ...solution.type import AbstractSolution
 
 
 class AbstractQuestion(AbstractSerializable):
@@ -16,7 +16,7 @@ class AbstractQuestion(AbstractSerializable):
         '''
 
     @abstractmethod
-    def draw(self, game: pygame):
+    def draw(self, screen: Surface):
         '''
         Given a pygame instance, represent the question on the canvas.
         '''

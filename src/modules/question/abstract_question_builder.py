@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from .. import AbstractSolution
-from .type import AbstractQuestion
+from ..solution.type.abstract_solution import AbstractSolution
+from .type.abstract_question import AbstractQuestion
 
 
 class AbstractQuestionBuilder(ABC):

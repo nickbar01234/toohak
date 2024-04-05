@@ -1,5 +1,5 @@
 from datetime import datetime
-from .. import AbstractQuestion
+from ..question.type.abstract_question import AbstractQuestion
 
 
 class PlayerState:
