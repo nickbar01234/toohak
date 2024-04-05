@@ -1,5 +1,5 @@
 from abc import abstractmethod
-import pygame
+from pygame import Surface
 from ...serializable.abstract_serializable import AbstractSerializable
 
 
@@ -20,7 +20,7 @@ class AbstractSolution(AbstractSerializable):
         '''
 
     @abstractmethod
-    def draw(self, game: pygame):
+    def draw(self, surface: Surface):
         '''
         Given a pygame instance, draw the solution
         '''

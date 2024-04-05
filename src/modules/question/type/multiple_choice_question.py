@@ -1,6 +1,7 @@
 import pickle
 from .abstract_question import AbstractQuestion
-from ... import AbstractSolution
+from ...solution.type import AbstractSolution
+from ...scene.styles import STYLE
 
 
 class MultipleChoiceQuestion(AbstractQuestion):
@@ -17,8 +18,13 @@ class MultipleChoiceQuestion(AbstractQuestion):
     def verify(self, solution):
         return self.get_solution().verify(solution)
 
-    def draw(self, game):
-        return
+    def draw(self, screen):
+        font = STYLE["font"]["question"]
+        text = font.render(self.get_question(), True, (0, 0, 0))
+        rect = text.get_rect()
+        rect.midtop = screen.get_rect().midtop
+        rect = rect.inflate(0, -50)
+        screen.blit(text, rect)
 
     def serialize(self):
         return pickle.dumps(self)

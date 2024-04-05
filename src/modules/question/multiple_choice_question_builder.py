@@ -2,7 +2,7 @@ from .abstract_question_builder import AbstractQuestionBuilder
 from .type import MultipleChoiceQuestion
 
 
-class MultipleQuestionBuilder(AbstractQuestionBuilder):
+class MultipleChoiceQuestionBuilder(AbstractQuestionBuilder):
     def __init__(self):
         self.__kwargs = {}
 
