@@ -5,8 +5,9 @@ Message format:
         'msg': string
     }
 '''
-
-CONNECT_SUCCESS_MSG = {'action': "connect", 'msg': "success"}
+CONNECT = 'connect'
+NAME = 'name'
+SUCCESS = 'success'
 
 class ConnectionError(Exception):
     pass
@@ -15,42 +16,60 @@ class MessageNotRecognized(Exception):
 class MessageNotForCurrentPhase(Exception):
     pass
 
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+
 import pickle
+def encode(action, msg):
+    msg = {"action": action, 'msg': msg}
+    return pickle.dumps(msg)
+
+def decode(data: bytes):
+    return pickle.loads(data)
+
+def decode(data: bytes, action: str) -> str:
+    decoded = pickle.loads(data)
+    match decoded:
+        case {'action': action2, 'msg': msg} if action2 == action:
+            return msg 
+        case msg:
+            logger.error(f"Received message unrecognized / not for the current phase: {msg}")
+            return ""
+
 '''
 Message Protocol for establishing connection
 '''
 def encode_connect_success():
-    msg = CONNECT_SUCCESS_MSG
-    return pickle.dumps(msg)
+    return encode(CONNECT, SUCCESS)
+
+def encode_name_response():
+    return encode(NAME, SUCCESS)
 
 def encode_name(name: str):
-    msg = {'action': "name", 'msg': name}
-    return pickle.dumps(msg)
+    return encode(NAME, name)
 
 def decode_name(data: bytes) -> str:
-    decoded = pickle.loads(data)
-    match decoded:
-        case {'action': "name", 'msg': name}:
-            return name 
-        case _:
-            return ""
+    return decode(data, NAME)
 
 def decode_response(data: bytes, action: str) -> bool:
-    decoded = pickle.loads(data)
-    match decoded:
-        case {'action': action2, 'msg': "success"}:
-            return action2 == action
-        case _:
-            return False
+    return decode(data, action) == SUCCESS
 
 def decode_connect_response(data: bytes) -> bool:
-    return decode_response(data, "connection")
+    return decode_response(data, CONNECT)
 
 def decode_name_response(data: bytes) -> bool:
-    return decode_response(data, "name")
+    return decode_response(data, NAME)
 
 
+'''
+Message Protocol for distributing questions
+'''
 
+
+'''
+Message Protocol for updating leaders' board
+'''
 
 '''
 TODO: discuss - in general, when mismatch, should the serializer 
@@ -59,7 +78,7 @@ TODO: discuss - in general, when mismatch, should the serializer
 def decode_connect(data: bytes) -> bool:
     decoded_msg = pickle.loads(data)
     match decoded_msg:
-        case {'action': "connect", 'msg': "success"}:
+        case {'action': "connect", 'msg': SUCCESS}:
             return True
         case {'action': "connect", 'msg': _}:
             return False

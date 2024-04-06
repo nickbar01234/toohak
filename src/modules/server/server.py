@@ -1,7 +1,7 @@
 import socket
 import threading
 import sys
-from ..serializable.serializer import *
+from ..serializable import serializer as s
 
 import logging
 # logging.basicConfig(level=logging.WARNING)  # default logging level
@@ -41,6 +41,7 @@ class Server:
     # For each listener's thread to receive message form a specific player
     def player_listener(self, player_socket, player_addr):
         try:
+            logger.info(f"Listener thread started to listen from {player_addr}")
             # finalize establishing connection
             player_socket.settimeout(5.0)
             player_name = s.decode_name(player_socket.recv(2048))
@@ -52,7 +53,9 @@ class Server:
             self.playerCount += 1
             player_socket.send(s.encode_name_response())
             
-            # Handling player's status update
+            logger.debug("REACHE HERE -> the rest feel free to ignore for now ") # TODO below
+            # TODO: Distribution questions
+            # TODO: Handling player's status update
             while True:
                 data = player_socket.recv(2048)
                 if not data:
