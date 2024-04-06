@@ -1,3 +1,7 @@
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+
 '''
 Message format:
     {
@@ -8,27 +12,15 @@ Message format:
 CONNECT = 'connect'
 NAME = 'name'
 SUCCESS = 'success'
-
-class ConnectionError(Exception):
-    pass
-class MessageNotRecognized(Exception):
-    pass
-class MessageNotForCurrentPhase(Exception):
-    pass
-
-import logging
-logger = logging.getLogger(__name__)
-logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+QUESTIONS = 'questions'
+UPDATE = 'update'
 
 import pickle
 def encode(action, msg):
     msg = {"action": action, 'msg': msg}
     return pickle.dumps(msg)
 
-def decode(data: bytes):
-    return pickle.loads(data)
-
-def decode(data: bytes, action: str) -> str:
+def decode(data: bytes, action: str):
     decoded = pickle.loads(data)
     match decoded:
         case {'action': action2, 'msg': msg} if action2 == action:
@@ -63,17 +55,38 @@ def decode_name_response(data: bytes) -> bool:
 
 
 '''
-Message Protocol for distributing questions
+Message Protocol for distributing questions TODO: testing
 '''
+def encode_questions(questions):
+    return encode(QUESTIONS, questions)
+
+def decode_questions(data):
+    return decode_response(data, QUESTIONS)
+
+'''
+Message Protocol for updating leaders' board TODO: testing
+'''
+def encode_leadersboard(top5players):
+    return encode(UPDATE, top5players)
+
+def decode_leadersboard(data):
+    return decode(data, UPDATE) 
 
 
-'''
-Message Protocol for updating leaders' board
-'''
+
 
 '''
 TODO: discuss - in general, when mismatch, should the serializer 
                             raise exception or log errors or return bool?
+
+                            
+class ConnectionError(Exception):
+    pass
+class MessageNotRecognized(Exception):
+    pass
+class MessageNotForCurrentPhase(Exception):
+    pass
+
 
 def decode_connect(data: bytes) -> bool:
     decoded_msg = pickle.loads(data)
