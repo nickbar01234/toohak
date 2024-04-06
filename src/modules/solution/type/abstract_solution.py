@@ -1,9 +1,8 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pygame import Surface
-from ...serializable.abstract_serializable import AbstractSerializable
 
 
-class AbstractSolution(AbstractSerializable):
+class AbstractSolution(ABC):
     def __init__(self, solution: any):
         self.__solution = solution
 
@@ -11,12 +10,6 @@ class AbstractSolution(AbstractSerializable):
     def verify(self, solution: "AbstractSolution") -> bool:
         '''
         Given a solution instance, compare if the solution is equal to self.
-        '''
-
-    @abstractmethod
-    def serialize(self) -> bytes:
-        '''
-        Convert instance to bytecode.
         '''
 
     @abstractmethod
