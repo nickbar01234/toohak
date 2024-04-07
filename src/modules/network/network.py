@@ -13,20 +13,16 @@ class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.settimeout(5.0)  # may raise socket.timeout exception
-        self.server = "10.0.0.137"  # WARNING: hardcode & need to be consistenet with server.py
-        self.port = 5555
-        self.server_addr = (self.server, self.port)
-        self.connect()
 
-    def connect(self):
-        try:
-            self.client.connect(self.server_addr)
-            if s.decode_connect_response(self.client.recv(2048)):
-                logger.info("Connection established.")
-            else:
-                logger.error("Connection failed to establish.")
-        except:
-            pass
+    def connect(self, ip: str):
+        logger.info("Connecting to %s", ip)
+        host, port = ip.split(":")
+        self.client.connect((host, int(port)))
+
+        if s.decode_connect_response(self.client.recv(2048)):
+            logger.info("Connection established.")
+        else:
+            logger.error("Connection failed to establish.")
 
     def send_name(self, name):
         try:
@@ -51,8 +47,3 @@ class Network:
 
     def finish_game(self, time):
         return
-
-
-# Testing
-n = Network()
-print(n.send_name("Toffoli"))

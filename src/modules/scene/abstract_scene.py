@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from pygame import Surface
 from ..state import PlayerState
+from ..network.network import Network
 
 
 class AbstractScene(ABC):
-    def __init__(self, screen: Surface, player_state: PlayerState, network: any):
+    def __init__(self, screen: Surface, player_state: PlayerState, network: Network):
         self.__screen = screen
         self.__player_state = player_state
         self.__network = network
