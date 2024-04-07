@@ -1,10 +1,11 @@
 from typing import Literal, TypedDict
 import pygame
 
+BASE = "./static/font"
+
+
 # pylint: disable=E1101
 pygame.init()
-
-BASE = "./static/font"
 
 
 def font_builder(size: int, sty: Literal["default", "black", "bold", "extrabold"] = "default"):
