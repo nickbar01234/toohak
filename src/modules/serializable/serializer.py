@@ -15,6 +15,9 @@ SUCCESS = 'success'
 QUESTIONS = 'questions'
 UPDATE = 'update'
 
+class InvalidMessageError(Exception):
+    pass
+
 import pickle
 def encode(action, msg):
     msg = {"action": action, 'msg': msg}
@@ -24,10 +27,11 @@ def decode(data: bytes, action: str):
     decoded = pickle.loads(data)
     match decoded:
         case {'action': action2, 'msg': msg} if action2 == action:
+            logger.debug("Decoding msg: " + str(msg))
             return msg 
         case msg:
             logger.error(f"Received message unrecognized / not for the current phase: {msg}")
-            return ""
+            raise InvalidMessageError
 
 '''
 Message Protocol for establishing connection
@@ -61,7 +65,7 @@ def encode_questions(questions):
     return encode(QUESTIONS, questions)
 
 def decode_questions(data):
-    return decode_response(data, QUESTIONS)
+    return decode(data, QUESTIONS)
 
 '''
 Message Protocol for updating leaders' board TODO: testing
@@ -73,31 +77,3 @@ def decode_leadersboard(data):
     return decode(data, UPDATE) 
 
 
-
-
-'''
-TODO: discuss - in general, when mismatch, should the serializer 
-                            raise exception or log errors or return bool?
-
-                            
-class ConnectionError(Exception):
-    pass
-class MessageNotRecognized(Exception):
-    pass
-class MessageNotForCurrentPhase(Exception):
-    pass
-
-
-def decode_connect(data: bytes) -> bool:
-    decoded_msg = pickle.loads(data)
-    match decoded_msg:
-        case {'action': "connect", 'msg': SUCCESS}:
-            return True
-        case {'action': "connect", 'msg': _}:
-            return False
-        case {'action': _, 'msg': _}:
-            raise MessageNotForCurrentPhase(str(decoded_msg))
-        case _:
-            raise MessageNotRecognized(str(decoded_msg))
-
-'''

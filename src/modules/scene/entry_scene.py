@@ -5,6 +5,7 @@ from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
 from . import utils
+import random
 
 
 class EntryScene(AbstractScene):
@@ -29,7 +30,10 @@ class EntryScene(AbstractScene):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.get_network().connect(ip)
-                        return SceneState.ROLE_SELECTION
+
+                        # TODO: move this to separate scene
+                        self.get_network().send_name("Fredkin" + str(random.randint(0,100)))
+                        return SceneState.PLAYER_QUESTION
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         ip = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:

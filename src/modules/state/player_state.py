@@ -1,6 +1,10 @@
 from datetime import datetime
 from ..question.type.abstract_question import AbstractQuestion
+from ..serializable import serializer as s
 
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 class PlayerState:
     def __init__(self, network):
@@ -10,6 +14,7 @@ class PlayerState:
         self.__questions = []
         self.__progress = []
         self.__init_time = None
+        self.__leadersboard = []
 
     def get_name(self):
         return self.__name
@@ -48,3 +53,10 @@ class PlayerState:
 
     def set_init_time(self):
         self.__init_time = datetime.now()
+
+    def get_leadersboard(self):
+        return self.__leadersboard
+    
+    def set_leadersboard(self, leadersboard):
+        self.__leadersboard = leadersboard
+        

@@ -9,26 +9,17 @@ from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBu
 
 
 class QuestionScene(AbstractScene):
-    def __init__(self, screen, player_state, network):
-        super().__init__(screen, player_state, network)
-        # TODO: refactor this later
-        player_state.set_questions([
-            MultipleChoiceQuestionBuilder()
-            .add_question("What's Tony's last name")
-            .add_option("Doan")
-            .add_option("Xu")
-            .add_option("Huang")
-            .add_option("Sheldon")
-            .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
-            .build(),
-            MultipleChoiceQuestionBuilder()
-            .add_question("What day is it")
-            .add_option("Mon")
-            .add_option("Tue")
-            .add_option("Wed")
-            .add_solution(MultipleChoiceSolutionBuilder().add_solution("Mon").build())
-            .build()
-        ])
+    # def __init__(self, screen, player_state, network):
+    #     super().__init__(screen, player_state, network)
+    #     player_state.set_questions([
+    #         MultipleChoiceQuestionBuilder()
+    #         .add_question("What's Tony's last name")
+    #         .add_option("Doan")
+    #         .add_option("Xu")
+    #         .add_option("Huang")
+    #         .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
+    #         .build()
+    #     ])
 
         self.__player_state = player_state
         # TODO: underscore before variable names?
