@@ -41,5 +41,6 @@ STYLE: StyleType = {
     },
     "height": 720,
     "width": 1280,
-    "fps": 60
+    "fps": 60,
+    "box_colors": ["red", "green", "blue", "yellow", "purple"]
 }
