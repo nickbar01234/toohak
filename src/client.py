@@ -3,7 +3,7 @@ from modules import SceneState, EntryScene, QuestionScene, QuitScene, PlayerStat
 
 if __name__ == "__main__":
     network = Network()
-    screen = pygame.display.set_mode((STYLE["height"], STYLE["width"]))
+    screen = pygame.display.set_mode((STYLE["width"], STYLE["height"]))
     pygame.display.set_caption("toohak")
 
     scenes = {
@@ -12,7 +12,8 @@ if __name__ == "__main__":
         SceneState.PLAYER_QUESTION: QuestionScene(screen, PlayerState(network), network),
         SceneState.QUIT: QuitScene(screen, PlayerState(network), network)
     }
-    scene = SceneState.ENTRY
+    # scene = SceneState.ENTRY
+    scene = SceneState.PLAYER_QUESTION
 
     while True:
         scene = scenes[scene].start_scene()
