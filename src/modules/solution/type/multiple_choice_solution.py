@@ -12,5 +12,8 @@ class MultipleChoiceSolution(AbstractSolution):
     def serialize(self):
         return pickle.dumps(self)
 
-    def draw(self, game):
+    # this solution builder is for user's answer
+    def draw(self):
+        # should have access to player's set of selections
+        # solution_builder.add_solution("a")
         return
