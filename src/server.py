@@ -1,9 +1,9 @@
+import logging
 import socket
 import threading
 import sys
 from modules import serializer as s
 
-import logging
 logger = logging.getLogger()
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
@@ -28,7 +28,8 @@ class Server:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.bind(self.addr)
         server_socket.listen()
-        logger.info(f"Server started, listening on localhost:{self.addr}")
+        logger.info("Server started, listening on %s:%s",
+                    self.addr[0], self.addr[1])
 
         while True:
             player_socket, player_addr = server_socket.accept()
@@ -86,9 +87,6 @@ class Server:
 
 
 if __name__ == "__main__":
-    # Testing establishing the connection
-    # WARNING: hardcode
-    server_ip = "10.243.20.119"
-    # server = "10.243.75.99"
-    port = 5555
-    Server(server_ip, port).start()
+    IP = socket.gethostbyname(socket.gethostname())
+    PORT = 5555
+    Server(IP, PORT).start()

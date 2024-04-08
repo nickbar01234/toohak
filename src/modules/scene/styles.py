@@ -8,7 +8,7 @@ BASE = "./static/font"
 pygame.init()
 
 
-def font_builder(size: int, sty: Literal["default", "black", "bold", "extrabold"] = "default"):
+def font_builder(size: int, sty: Literal["default", "black", "bold", "extrabold"] = "black"):
     path = {
         "default": f"{BASE}/Montserrat-VariableFont_wght.ttf",
         "black": f"{BASE}/Montserrat-Black.ttf",
@@ -29,6 +29,7 @@ class StyleType(TypedDict):
     width: int
     height: int
     font: FontType
+    fps: int
 
 
 STYLE: StyleType = {
@@ -39,5 +40,6 @@ STYLE: StyleType = {
         "text": font_builder(16)
     },
     "width": 720,
-    "height": 1280
+    "height": 1280,
+    "fps": 60
 }
