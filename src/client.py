@@ -1,6 +1,6 @@
 import pygame
 import threading
-from modules import SceneState, EntryScene, QuestionScene, QuitScene, PlayerState, RoleSelectionScene, Network, STYLE
+from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, Network, STYLE
 
 if __name__ == "__main__":
     network = Network()
