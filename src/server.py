@@ -3,14 +3,23 @@ import socket
 import threading
 import sys
 from modules import serializer as s
+from modules.question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
+from modules.solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
+
 
 logger = logging.getLogger()
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
-
-class ConnectionError(Exception):
-    pass
-
+# Mock the set of questions TODO: remove once we have an actual set of questions
+questions = [
+    MultipleChoiceQuestionBuilder()
+    .add_question("What's Tony's last name ----")
+    .add_option("Doan")
+    .add_option("Xu")
+    .add_option("Huang")
+    .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
+    .build()
+    ]
 
 class Server:
     def __init__(self, ip, port):
@@ -47,20 +56,15 @@ class Server:
             logger.info(
                 f"Listener thread started to listen from {player_addr}")
             # finalize establishing connection
-            player_name = s.decode_name(player_socket.recv(2048))
-            if not player_name:
-                logger.error(
-                    f"{player_addr} failed to send the player's name.")
-                raise ConnectionError
+            player_name = s.decode_name(player_socket.recv(2048)) # may raise InvalidMessage exception
             logger.info(f"Player's name from {player_addr} is {player_name}")
             self.playerSockets[player_socket] = (player_addr, player_name)
             self.playerCount += 1
             player_socket.send(s.encode_name_response())
 
-            # TODO below
-            logger.debug(
-                "REACHE HERE -> the rest feel free to ignore for now ")
-            # TODO: Distribution questions
+            # TODO: Distribution questions - do i need to wait for a signal from the referee?
+            player_socket.send(s.encode_questions(questions))
+
             # TODO: Handling player's status update
             while True:
                 data = player_socket.recv(2048)
