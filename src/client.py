@@ -1,5 +1,5 @@
 import pygame
-from modules import SceneState, EntryScene, QuestionScene, QuitScene, PlayerState, Network, STYLE
+from modules import SceneState, EntryScene, QuestionScene, QuitScene, PlayerState, RoleSelectionScene, Network, STYLE
 
 if __name__ == "__main__":
     network = Network()
@@ -8,6 +8,7 @@ if __name__ == "__main__":
 
     scenes = {
         SceneState.ENTRY: EntryScene(screen, PlayerState(network), network),
+        SceneState.ROLE_SELECTION: RoleSelectionScene(screen, PlayerState(network), network),
         SceneState.PLAYER_QUESTION: QuestionScene(screen, PlayerState(network), network),
         SceneState.QUIT: QuitScene(screen, PlayerState(network), network)
     }
