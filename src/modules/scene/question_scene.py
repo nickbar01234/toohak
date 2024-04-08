@@ -1,5 +1,6 @@
 import sys
 import pygame as pg
+from time import sleep
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
@@ -26,9 +27,6 @@ class QuestionScene(AbstractScene):
     def start_scene(self):
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
-        option_boxes, optons_box_borders = self.__create_option_boxes()
-
-        submit_box = self.__create_submit_box()
 
         while True:
             for event in pg.event.get():
@@ -38,14 +36,14 @@ class QuestionScene(AbstractScene):
                         sys.exit(0)
 
                     case pg.MOUSEBUTTONDOWN:
-                        if submit_box.collidepoint(event.pos):
+                        if self.submit_box.collidepoint(event.pos):
                             # note: a janky way of detecting all questions have been answered (we can definitely change this later)
                             if not self.__submit():
                                 return SceneState.QUIT
                             continue
 
                         # update selection
-                        for option, box in zip(self.curr_options, option_boxes):
+                        for option, box in zip(self.curr_options, self.boxes):
                             if box.collidepoint(event.pos):
                                 if option in self.selected:
                                     print(f"You have deselected \"{option}\"!")
@@ -60,39 +58,25 @@ class QuestionScene(AbstractScene):
             self.curr_question.draw(self.get_screen())
 
             # draw submit box
-            pg.draw.rect(self.get_screen(), "lightblue", submit_box)
+            pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)
             submit_text_surface = STYLE["font"]["text"].render(
                 "Submit", True, (0, 0, 0))
-            self.get_screen().blit(submit_text_surface, (submit_box.x + 10,
-                                                         submit_box.y + submit_box.height // 2 - 12))
-
-            # draw next button top right
-            # click next
-            # build solution
-            # verify correct / wrong
+            self.get_screen().blit(submit_text_surface, (self.submit_box.x + 10,
+                                                         self.submit_box.y + self.submit_box.height // 2 - 12))
 
             # draw all options
-            for i, (option, box) in enumerate(zip(self.curr_options, option_boxes)):
-                # print(f"Drawing box with center {box.center}")
-                # TESTING
-                pg.draw.rect(self.get_screen(),
-                             STYLE["box_colors"][i % len(STYLE["box_colors"])], box)
-                # TODO: center text
-                text_surface = STYLE["font"]["text"].render(
-                    option, True, (0, 0, 0))
-                self.get_screen().blit(text_surface, box.center)
+            self.__draw_options()
 
             pg.display.flip()
 
     # move to the next question
     def __submit(self):
         print("You are submitting!")
-        # TODO: verify solution
-        # note: not using the solution builder here cuz it's faster this way
         user_solution = MultipleChoiceSolutionBuilder(self.selected).build()
         print(f"Your solution is {self.selected}")
         correctness = self.curr_question.verify(user_solution)
-        print(f"Your answer was {correctness}!")
+        self.__draw_correctness(correctness)
+
         # update scene states
         self.q_idx += 1
         if self.num_questions == self.q_idx:
@@ -102,8 +86,37 @@ class QuestionScene(AbstractScene):
             self.q_idx]
         self.curr_options = self.curr_question.get_options()
         self.selected = set()
+        self.boxes, self.box_borders = self.__create_options_boxes()
+        self.__player_state.set_progress(correctness)
+        # TODO: send udpated progress to server
 
         return True
+
+    def __draw_correctness(self, correctness):
+        text = STYLE["font"]["title"].render(
+            f"Your answer was {correctness}!", True, (0, 0, 0))
+        rect = text.get_rect()
+        rect.center = self.get_screen().get_rect().center
+        self.get_screen().fill("white")
+        self.get_screen().blit(text, rect)
+        pg.display.flip()
+        sleep(1)
+
+    def __draw_options(self):
+        # draw options zone box
+        zone_box = self.__create_zone_box()
+        pg.draw.rect(self.get_screen(),
+                     STYLE["box_colors"][4], zone_box)
+
+        for i, (option, box) in enumerate(zip(self.curr_options, self.boxes)):
+            # TESTING
+            # print(f"Drawing box with center {box.center}")
+            pg.draw.rect(self.get_screen(),
+                         STYLE["box_colors"][i % len(STYLE["box_colors"])], box)
+            # TODO: center text
+            text_surface = STYLE["font"]["text"].render(
+                option, True, (0, 0, 0))
+            self.get_screen().blit(text_surface, box.center)
 
     # TODO: define big border for all options
     # TODO: define templates for 1, 2, 3, and 4 options (we can do this as we cap max options?)
@@ -118,43 +131,54 @@ class QuestionScene(AbstractScene):
 
         return box
 
-    # when there is only one question
-    # def __create_option_boxes_1(self, options):
+    def __create_zone_box(self):
+        zone_h_space, zone_v_space = STYLE["width"] * .1, STYLE["height"] * .3
+        zone_width = STYLE["width"] - 2 * zone_h_space
+        zone_height = STYLE["height"] * .4
+        center_x = zone_h_space + zone_width // 2
+        center_y = zone_v_space + zone_height // 2
+        box = pg.Rect(0, 0, zone_width + 10, zone_height + 10)
+        box.center = (center_x, center_y)
 
-    def __create_option_boxes(self):
-        option_boxes, optons_box_borders = [], []
+        return box
 
-        border = 3
-        # single side
-        screen_border_width, screen_border_height = STYLE["width"] * .1, STYLE["height"] * .3
-        # TODO: rename variable
-        options_zone_width = STYLE["width"] - 2 * screen_border_width
-        option_box_center = options_zone_width // (len(self.curr_options) + 1)
-        # print(STYLE["width"], options_zone_width)
-        # print(option_box_center, option_box_center * 2, option_box_center * 3)
+    def __create_options_boxes(self):
+        boxes, box_borders = [], []
 
-        box_width = options_zone_width // len(self.curr_options) // 2
-        box_height = STYLE["height"] * .4
-        center_y = screen_border_height + box_height // 2
+        # spacing between edge of screen and border of options zone that holds all options
+        zone_h_space, zone_v_space = STYLE["width"] * .1, STYLE["height"] * .3
+        zone_width = STYLE["width"] - 2 * zone_h_space
+        center_xs = []
+
+        # different templates for different number of options
+        # different width, height and centers
+        match len(self.curr_options):
+            case 1 | 2 | 3:
+                box_center = zone_width // (
+                    len(self.curr_options) + 1)
+                box_width = zone_width // len(self.curr_options) // 2
+                print("Box width is", box_width)
+                box_height = STYLE["height"] * .4
+                center_y = zone_v_space + box_height // 2
+
+            # grid
+            case 4:
+                pass
+
+            case _:
+                print(
+                    f"Cannot have more than 4 options, but somehow we have {len(self.curr_options)} options!")
+
         # TODO: border between boxes
         # print("Screen width is", STYLE["width"])
         # print("Screen height is", STYLE["height"])
 
         for i, option in enumerate(self.curr_options):
-            # screen_width =
-            # left_blank + box + blank + box + blank + box + right_blank
-            center_x = screen_border_width + (i + 1) * option_box_center
-            option_box = pg.Rect(0, 0, box_width, box_height)
-            option_box.center = (center_x, center_y)
+            # screen_width = left_blank + box + blank + box + blank + box + right_blank
+            center_x = zone_h_space + (i + 1) * box_center
+            box = pg.Rect(0, 0, box_width, box_height)
+            box.center = (center_x, center_y)
             # print(f"Center of option {i} is {center_x, center_y}")
-            option_boxes.append(option_box)
+            boxes.append(box)
 
-        # width, height = 512, 64
-        # center_x, center_y = self.get_screen().get_rect().center
-        # textbox_border = pg.Rect(0, 0, width, height)
-        # textbox_border.center = (center_x, center_y)
-        # left_x, left_y = textbox_border.topleft
-        # textbox = pg.Rect(0, 0, width - border * 2, height - border * 2)
-        # textbox.topleft = (left_x + border, left_y + border)
-
-        return option_boxes, optons_box_borders
+        return boxes, box_borders
