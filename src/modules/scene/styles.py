@@ -1,8 +1,8 @@
 from typing import Literal, TypedDict
+import os
 import pygame
 
-BASE = "./static/font"
-
+BASE = os.path.join(os.path.abspath(os.getcwd()), "src", "static", "font")
 
 # pylint: disable=E1101
 pygame.init()
