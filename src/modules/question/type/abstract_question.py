@@ -4,9 +4,10 @@ from ...solution import AbstractSolution
 
 
 class AbstractQuestion(ABC):
-    def __init__(self, question: str, solution: AbstractSolution):
+    def __init__(self, question: str, solution: AbstractSolution, options: list[str]):
         self.__question = question
         self.__solution = solution
+        self.__options = options
 
     @abstractmethod
     def verify(self, solution: AbstractSolution):
@@ -25,3 +26,6 @@ class AbstractQuestion(ABC):
 
     def get_solution(self):
         return self.__solution
+
+    def get_options(self):
+        return self.__options

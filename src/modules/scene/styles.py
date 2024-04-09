@@ -25,11 +25,17 @@ class FontType(TypedDict):
     text: pygame.font.Font
 
 
+class ColorType(TypedDict):
+    active: pygame.Color
+    default: pygame.Color
+
+
 class StyleType(TypedDict):
     width: int
     height: int
     font: FontType
     fps: int
+    box_colors: list[ColorType]
 
 
 STYLE: StyleType = {
@@ -42,5 +48,16 @@ STYLE: StyleType = {
     "height": 720,
     "width": 1280,
     "fps": 60,
-    "box_colors": ["red", "green", "blue", "yellow", "purple"]
+    "box_colors": [
+        # Red
+        {"active": pygame.Color("#913831"), "default": "red"},
+        # Green
+        {"active": pygame.Color("#097969"),
+         "default": pygame.Color("#5F9EA0")},
+        # Blue
+        {"active": pygame.Color("#00008B"),
+         "default": pygame.Color("#A7C7E7")},
+        # Yellow
+        {"active": pygame.Color("#FFD700"), "default": pygame.Color("#FCF55F")}
+    ]
 }
