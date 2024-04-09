@@ -1,6 +1,10 @@
 import pygame
+import logging
 import threading
 from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, Network, STYLE
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 if __name__ == "__main__":
     network = Network()
@@ -25,7 +29,7 @@ class Client:
         self.state = PlayerState(self.network)
 
     def start(self):
-        screen = pygame.display.set_mode((STYLE["height"], STYLE["width"]))
+        screen = pygame.display.set_mode((STYLE["width"], STYLE["height"]))
         pygame.display.set_caption("toohak")
         scene = SceneState.ENTRY
 
@@ -51,15 +55,29 @@ class Client:
                 listener_thread.start()
 
     def server_listener(self):
-        logger.info(f"Listener thread waiting for updates from server.")
-        gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        while gameContinue:
+        logger.info(f"Listener thread waiting for game to start from server.")
+
+        # TODO: wait for a message for game starts
+        self.network.receive_game_start()  # block until game starts
+
+        logger.info(
+            f"Game starts; Listener now waits for updates from server for leader's board / terminate sig.")
+
+        while True:
             leadersboard = self.network.receive_leadersboard()
             self.state.set_leadersboard(leadersboard)
             logger.info(f"Leader's board updated: {
                         self.state.get_leadersboard}")
-            gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        logger.info(f"Received update from server: Game ends")
+            # gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        # gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        # while gameContinue:
+        #     leadersboard = self.network.receive_leadersboard()
+        #     self.state.set_leadersboard(leadersboard)
+        #     logger.info(f"Leader's board updated: {self.state.get_leadersboard}")
+        #     gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        # logger.info(f"Received update from server: Game ends")
+
+        # TODO: wait for and receive Final rank before exiting
 
         # TODO: wait for and receive Final rank before exiting
 

@@ -72,6 +72,9 @@ class Server:
                     self.__gameStarts.release(self.__playerCount) # unblock all threads to start game
                     self.__gameEnds = threading.Barrier(self.__playerCount)
 
+                    # broadcasting to let the clients know game starts 
+                    self.broadcast("game starts", s.encode_startgame)
+
                     for listener in self.__playerListeners:
                         listener.join()
                     break 

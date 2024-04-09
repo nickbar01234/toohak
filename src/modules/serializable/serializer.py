@@ -7,13 +7,14 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 '''
 Message format:
     {
-        'action': 'connect | name | questions | leadersboard | individual_progress | end | leave',
+        'action': 'connect | name | questions | start | leadersboard | individual_progress | end | leave',
         'msg': string
     }
 '''
 CONNECT = 'connect'
 NAME = 'name'
 SUCCESS = 'success'
+START = "start"
 QUESTIONS = 'questions'
 LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
@@ -71,6 +72,15 @@ def encode_questions(questions: list[AbstractQuestionBuilder]):
 
 def decode_questions(data: bytes):
     return decode(data, QUESTIONS)
+
+'''
+Message Protocol for server to signal players game start
+'''
+def encode_startgame():
+    return encode(START, "")
+
+def decode_startgame(data: bytes):
+    return decode(data, START)
 
 '''
 Message Protocol for updating leaders' board TODO: testing
