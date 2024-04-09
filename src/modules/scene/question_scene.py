@@ -9,24 +9,17 @@ from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBu
 
 
 class QuestionScene(AbstractScene):
-    # def __init__(self, screen, player_state, network):
-    #     super().__init__(screen, player_state, network)
-    #     player_state.set_questions([
-    #         MultipleChoiceQuestionBuilder()
-    #         .add_question("What's Tony's last name")
-    #         .add_option("Doan")
-    #         .add_option("Xu")
-    #         .add_option("Huang")
-    #         .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
-    #         .build()
-    #     ])
-
-
-    # TODO: add the network choice for updating the player's progress (question scene) to the server after merge 
-
     # TODO: add the network choice for updating the player's progress (question scene) to the server after merge 
 
     def start_scene(self):
+        # Now initialize the questions when starting the scene 
+        self.q_idx = 0
+        self.num_questions = len(self.get_player_state().get_questions())
+        self.curr_question = self.get_player_state().get_questions()[0]
+        self.curr_options = self.curr_question.get_options()
+        self.selected = set()
+        self.boxes, self.box_borders = self.__create_options_boxes()
+        self.submit_box = self.__create_submit_box()
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
 

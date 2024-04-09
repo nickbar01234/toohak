@@ -48,3 +48,7 @@ class Network:
     def receive_leadersboard_or_game_ends(self):
         self.client.setblocking(True)
         return s.decode_update_or_endgame(self.client.recv(2048))
+
+    def receive_game_start(self):
+        self.client.setblocking(True)
+        return s.decode_startgame(self.client.recv(1024))
