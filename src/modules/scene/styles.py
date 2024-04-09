@@ -39,7 +39,8 @@ STYLE: StyleType = {
         "answer": font_builder(24, "extrabold"),
         "text": font_builder(16)
     },
-    "width": 720,
-    "height": 1280,
-    "fps": 60
+    "height": 720,
+    "width": 1280,
+    "fps": 60,
+    "box_colors": ["red", "green", "blue", "yellow", "purple"]
 }

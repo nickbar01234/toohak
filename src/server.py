@@ -34,8 +34,8 @@ class Server:
         while True:
             player_socket, player_addr = server_socket.accept()
             player_socket.send(s.encode_connect_success())
-            logger.info(f"New connection from {
-                        player_addr}, {self.playerCount}")
+            logger.info(f"""New connection from {
+                            player_addr}, {self.playerCount}""")
 
             player_listener = threading.Thread(
                 target=self.player_listener, args=(player_socket, player_addr))
