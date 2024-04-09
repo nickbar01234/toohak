@@ -6,8 +6,7 @@ from ...scene.styles import STYLE
 
 class MultipleChoiceQuestion(AbstractQuestion):
     def __init__(self, question: str, solution: AbstractSolution, options: set[str]):
-        super().__init__(question, solution)
-        self.__options = options
+        super().__init__(question, solution, options)
 
     def __eq__(self, other):
         return isinstance(other, MultipleChoiceQuestion) and \
@@ -28,6 +27,3 @@ class MultipleChoiceQuestion(AbstractQuestion):
 
     def serialize(self):
         return pickle.dumps(self)
-
-    def get_options(self):
-        return self.__options
