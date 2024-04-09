@@ -44,3 +44,7 @@ class Network:
         leadersboard = s.decode_leadersboard(self.client.recv(2048))
         logger.debug(f"Received leader's board from server: {str(leadersboard)}")
         return leadersboard
+
+    def receive_leadersboard_or_game_ends(self):
+        self.client.setblocking(True)
+        return s.decode_update_or_endgame(self.client.recv(2048))

@@ -20,6 +20,9 @@ class QuestionScene(AbstractScene):
     #         .build()
     #     ])
 
+
+    # TODO: add the network choice for updating the player's progress (question scene) to the server after merge 
+
     def start_scene(self):
         # TODO: Who is responsible to render the next question
         idx = 0
