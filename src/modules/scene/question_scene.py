@@ -69,6 +69,10 @@ class QuestionScene(AbstractScene):
         print(f"Your solution is {self.selected}")
         correctness = self.curr_question.verify(user_solution)
         self.__draw_correctness(correctness)
+        self.get_player_state().set_progress(correctness)
+
+        # send update to the server 
+        self.get_network().update_progress(self.get_player_state().get_progress())
 
         # update scene states
         self.q_idx += 1
@@ -80,8 +84,6 @@ class QuestionScene(AbstractScene):
         self.curr_options = self.curr_question.get_options()
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
-        self.__player_state.set_progress(correctness)
-        # TODO: send udpated progress to server
 
         return True
 

@@ -18,7 +18,7 @@ class PlayerState:
         self.__network = network
         self.__name = None
         self.__questions = []
-        self.__progress = []
+        self.__progress : list[bool] = []
         self.__init_time = None
         self.__leadersboard = []
         self.__game_state = GameState.START

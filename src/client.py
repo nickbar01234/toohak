@@ -33,18 +33,17 @@ class Client:
                 logger.debug("Received questions: " + str(questions))
                 self.state.set_questions(questions)
 
+                logger.info(f"Waiting for game to be started.")
+                self.network.receive_game_start() # block until game starts
+                logger.info(f"Game starts")
+
                 # start a listner's thread to receive updates from the server (the leadersboard and game ends sig)
                 listener_thread = threading.Thread( target=self.server_listener)
                 listener_thread.start()
 
             
     def server_listener(self):
-        logger.info(f"Listener thread waiting for game to start from server.")
-
-        # TODO: wait for a message for game starts 
-        self.network.receive_game_start() # block until game starts
-
-        logger.info(f"Game starts; Listener now waits for updates from server for leader's board / terminate sig.")
+        logger.info(f"Listener thread started - waits for updates from server for leader's board / terminate sig.")
 
         while True:
             leadersboard = self.network.receive_leadersboard()
