@@ -24,6 +24,8 @@ class QuestionScene(AbstractScene):
 
     # TODO: add the network choice for updating the player's progress (question scene) to the server after merge 
 
+    # TODO: add the network choice for updating the player's progress (question scene) to the server after merge 
+
     def start_scene(self):
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
