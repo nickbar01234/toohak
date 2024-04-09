@@ -21,16 +21,7 @@ class QuestionScene(AbstractScene):
     #         .build()
     #     ])
 
-        self.__player_state = player_state
-        # TODO: underscore before variable names?
-        # TODO: is it good practice to have so many fields?
-        self.q_idx = 0
-        self.num_questions = len(self.get_player_state().get_questions())
-        self.curr_question = self.get_player_state().get_questions()[0]
-        self.curr_options = self.curr_question.get_options()
-        self.selected = set()
-        self.boxes, self.box_borders = self.__create_options_boxes()
-        self.submit_box = self.__create_submit_box()
+    # TODO: add the network choice for updating the player's progress (question scene) to the server after merge
 
     def start_scene(self):
         # TODO: ensure the player selects at least one option

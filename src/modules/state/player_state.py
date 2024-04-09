@@ -6,6 +6,12 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
+from enum import Enum, auto
+
+class GameState(Enum):
+    START = auto()
+    END = auto()
+
 class PlayerState:
     def __init__(self, network):
         # TODO - Change type hint for network
@@ -15,6 +21,7 @@ class PlayerState:
         self.__progress = []
         self.__init_time = None
         self.__leadersboard = []
+        self.__game_state = GameState.START
 
     def get_name(self):
         return self.__name
@@ -59,4 +66,11 @@ class PlayerState:
     
     def set_leadersboard(self, leadersboard):
         self.__leadersboard = leadersboard
-        
+    
+    def game_ends(self):
+        return self.__game_state == GameState.END
+    
+    def set_game_ends(self):
+        self.__game_state = GameState.END
+
+
