@@ -14,7 +14,7 @@ Message format:
 CONNECT = 'connect'
 NAME = 'name'
 SUCCESS = 'success'
-START = "start"
+START = 'start'
 QUESTIONS = 'questions'
 LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
@@ -80,6 +80,7 @@ def encode_startgame():
     return encode(START, "")
 
 def decode_startgame(data: bytes):
+    logger.debug("Decoding data to hopefully get startgame: {data}")
     return decode(data, START)
 
 '''

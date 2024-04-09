@@ -13,11 +13,19 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 # Mock the set of questions TODO: remove once we have an actual set of questions
 questions = [
     MultipleChoiceQuestionBuilder()
-    .add_question("What's Tony's last name ----")
+    .add_question("What's Tony's last name")
     .add_option("Doan")
     .add_option("Xu")
     .add_option("Huang")
+    .add_option("Sheldon")
     .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
+    .build(),
+    MultipleChoiceQuestionBuilder()
+    .add_question("What day is it")
+    .add_option("Mon")
+    .add_option("Tue")
+    .add_option("Wed")
+    .add_solution(MultipleChoiceSolutionBuilder().add_solution("Mon").build())
     .build()
     ]
 
@@ -65,22 +73,10 @@ class Server:
                 target=self.player_listener, args=(player_socket, player_addr))
             self.__playerListeners.append(player_listener)
             player_listener.start()
-
-            # TODO: move the code & change this conditional later to listen from the referee
-            with self.__playerCountLock:
-                if self.__playerCount == 2: # WARNING: currently the game only allows for 2 players
-                    self.__gameStarts.release(self.__playerCount) # unblock all threads to start game
-                    self.__gameEnds = threading.Barrier(self.__playerCount)
-
-                    # broadcasting to let the clients know game starts 
-                    self.broadcast("game starts", s.encode_startgame)
-
-                    for listener in self.__playerListeners:
-                        listener.join()
-                    break 
-
-        # TODO: add a graceful way to terminate the server 
         
+        # TODO: add a graceful way to terminate the server & wait for the player threads (I.e. exit while loop)? 
+        # for listener in self.__playerListeners:
+        #     listener.join() 
 
 
     # For each listener's thread to receive message form a specific player
@@ -88,19 +84,30 @@ class Server:
         try:
             logger.info(
                 f"Listener thread started to listen from {player_addr}")
-            # finalize establishing connection
+            # finalize establishing connection by receiving player's name
             player_name = s.decode_name(player_socket.recv(2048)) # may raise InvalidMessage exception
             logger.info(f"Player's name from {player_name, player_addr} is {player_name}")
             self.__playerSockets[player_socket] = (player_addr, player_name)
             self.__playerSocketsLocks[player_socket] = threading.Lock() # TODO: with line above -> make it atomic?
+            player_socket.sendall(s.encode_name_response())
 
+            # Update server's state
             with self.__playerCountLock:
                 self.__playerCount += 1
+
+                # TODO: move this to where it's appropriate
+                if self.__playerCount == 2:
+                    # broadcasting to let the clients know game starts 
+                    logger.info(f"Game starts.")
+                    self.broadcast("game starts", s.encode_startgame())
+
+                    self.__gameStarts.release(self.__playerCount) # unblock all threads to start game
+                    self.__gameEnds = threading.Barrier(self.__playerCount)
+
 
             with self.__playerStateLock:
                 self.__playerState[player_name] = []
             
-            player_socket.sendall(s.encode_name_response())
 
             # TODO: Distribution questions - do i need to wait for a signal from the referee?
             player_socket.sendall(s.encode_questions(self.__questions))

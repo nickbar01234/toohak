@@ -8,6 +8,7 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 # Thought: network only used by clients? since each client will have a network object and
 # server will implement its own message passing protocol => since it keeps the list of clients in its own class
 
+type Progress = list[bool] #TODO: again global type file?
 
 class Network:
     def __init__(self):
@@ -22,7 +23,7 @@ class Network:
         logger.info("Connection established.")
 
     def send_name(self, name):
-        self.client.send(s.encode_name(name))
+        self.client.sendall(s.encode_name(name))
         s.decode_name_response(self.client.recv(2048)) # may raise InvalidMessage / timeout exception
         logger.info("Player's name is updated on the server.")
 
@@ -31,9 +32,10 @@ class Network:
         questions = s.decode_questions(self.client.recv(4096)) # may raise InvalidMessage exception 
         return questions
 
-    def update_progress(self, name, ans):
-        return
-
+    def update_progress(self, progress: Progress):
+        self.client.sendall(s.encode_progress(progress))
+        logger.info("Player's updated progress is sent to the server")
+    
     def update_leaderboard(self, top5players):
         return
 
@@ -51,4 +53,11 @@ class Network:
 
     def receive_game_start(self):
         self.client.setblocking(True)
-        return s.decode_startgame(self.client.recv(1024))
+        logger.debug(f"Block and wait for game_start from server.")
+        data,addr = self.client.recvfrom(2048)
+        while addr == None: # TODO: this is here because the socket kept getting a very tiny message from addr=None
+            logger.debug(f"Received {data} from {addr}")
+            data,addr = self.client.recvfrom(2048) 
+        decoded = s.decode_startgame(data)
+        logger.debug(f"Getting {str(decoded)}")
+        return decoded
