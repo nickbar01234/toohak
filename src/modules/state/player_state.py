@@ -1,10 +1,13 @@
-from enum import Enum, auto
-import threading
-from datetime import datetime
-from ..question.type.abstract_question import AbstractQuestion
-from ..serializable import serializer as s
-
 import logging
+from ..serializable import serializer as s
+from ..question.type.abstract_question import AbstractQuestion
+from datetime import datetime
+import threading
+from enum import Enum, auto
+<< << << < Updated upstream
+== == == =
+>>>>>> > Stashed changes
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
@@ -27,7 +30,8 @@ class PlayerState:
         self.__progress: list[bool] = []
         self.__init_time = None
         self.__leadersboard = []
-        self.__game_state = GameState.WAIT
+        self.__leadersboardLock = threading.Lock()
+        self.__game_state = GameState.START
 
     def get_name(self):
         return self.__name
@@ -73,13 +77,12 @@ class PlayerState:
         self.__init_time = datetime.now()
 
     def get_leadersboard(self):
-        return self.__leadersboard
+        with self.__leadersboardLock:
+            return self.__leadersboard
 
     def set_leadersboard(self, leadersboard):
-        self.__leadersboard = leadersboard
-
-    def set_game_starts(self):
-        self.__game_state = GameState.START
+        with self.__leadersboardLock:
+            self.__leadersboard = leadersboard
 
     def game_ends(self):
         return self.__game_state == GameState.END
