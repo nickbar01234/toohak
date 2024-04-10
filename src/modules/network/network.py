@@ -10,7 +10,7 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 # Thought: network only used by clients? since each client will have a network object and
 # server will implement its own message passing protocol => since it keeps the list of clients in its own class
 
-type Progress = list[bool]  # TODO: again global type file?
+Progress = list[bool]  # TODO: again global type file?
 
 
 class Network:

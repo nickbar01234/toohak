@@ -1,7 +1,7 @@
 import logging
 import threading
 import pygame
-from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, Network, STYLE
+from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, AddQuestionScene, MonitorScene, Network, STYLE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -23,8 +23,15 @@ class Client:
             SceneState.ENTRY: EntryScene(screen, self.state, self.network),
             SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network, self.network_barrier),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
+
+            # Player scenes
+            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network),
             SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
-            SceneState.QUIT: QuitScene(screen, self.state, self.network)
+            SceneState.QUIT: QuitScene(screen, self.state, self.network),
+
+            # Referee scenes
+            SceneState.REFEREE_ADD_QUESTION: AddQuestionScene(screen, self.state, self.network),
+            SceneState.REFEREE_MONITOR: MonitorScene(screen, self.state, self.network),
         }
 
         listener_thread = threading.Thread(
@@ -32,6 +39,7 @@ class Client:
         listener_thread.start()
 
         while True:
+            logger.info(f"On scene {scene}")
             scene = SCENES[scene].start_scene()
 
             if scene == SceneState.PLAYER_QUESTION:

@@ -29,11 +29,11 @@ class RoleSelectionScene(AbstractScene):
 
                 if event.type == pygame.MOUSEBUTTONDOWN and referee_box[0].collidepoint(event.pos):
                     # TODO(nickbar01234) - Handle sending information
-                    return SceneState.QUIT
+                    return SceneState.REFEREE_ADD_QUESTION
 
                 if event.type == pygame.MOUSEBUTTONDOWN and player_box[0].collidepoint(event.pos):
                     # TODO(nickbar01234) - Handle sending information
-                    return SceneState.PLAYER_NAME
+                    return SceneState.PLAYER_WAIT
 
             self.get_screen().fill("white")
 

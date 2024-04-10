@@ -10,6 +10,7 @@ from . import utils
 
 class EntryScene(AbstractScene):
     def start_scene(self):
+        print("Inside entry scene")
         clock = pygame.time.Clock()
 
         ip = ""

@@ -5,4 +5,6 @@ from .scene_state import SceneState
 from .question_scene import QuestionScene
 from .role_selection_scene import RoleSelectionScene
 from .name_scene import NameScene
+from .add_question_scene import AddQuestionScene
+from .monitor_scene import MonitorScene
 from .styles import STYLE
