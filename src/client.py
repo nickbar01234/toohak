@@ -45,7 +45,8 @@ class Client:
 
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
-        self.network.receive_game_start()
+
+        self.network.block_until_game_starts()
         self.state.game_starts.release()
         logger.info("Received game starts signal from server.")
 

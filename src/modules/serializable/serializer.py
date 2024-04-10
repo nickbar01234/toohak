@@ -33,7 +33,7 @@ def encode(action, msg):
 
 
 def decode(data: bytes, action: str):
-    logger.debug("Decoding binary: %s for %s", data, action)
+    # logger.debug("Decoding binary: %s for %s", data, action)
     decoded = pickle.loads(data)
     match decoded:
         case {'action': action2, 'msg': msg} if action2 == action:
@@ -41,7 +41,7 @@ def decode(data: bytes, action: str):
             return msg
         case msg:
             logger.error(
-                f"Received message unrecognized / not for the current phase: {msg}")
+                "Received message unrecognized / not for the current phase: %s", msg)
             raise InvalidMessageError
 
 

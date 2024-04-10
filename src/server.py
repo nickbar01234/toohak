@@ -1,7 +1,7 @@
 import logging
 import socket
 import threading
-import sys
+import time
 from modules import serializer as s
 from modules.question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from modules.solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
@@ -113,22 +113,42 @@ class Server:
 
                 # distribute questions as soon as each player joined
                 player_socket.sendall(s.encode_questions(self.__questions))
-
+                time.sleep(1)
                 self.__playerCount += 1
+
                 # Hardcoding for now: start the game when 2 players joined
                 # TODO: move this to where it's appropriate (referee should start the game instead)
                 if self.__playerCount == 1:  # TODONOW: change back to 2
                     logger.info("Game starts")
+                    self.__gameStarts.release(self.__playerCount)
                     self.broadcast("Game starts", s.encode_startgame())
 
                     # unblock all threads to start game
-                    self.__gameStarts.release(self.__playerCount)
                     # self.__gameEnds = threading.Barrier(self.__playerCount)
 
             self.__gameStarts.wait()
             for _ in range(len(self.__questions)):
                 progress = s.decode_progress(player_socket.recv(2048))
                 logger.info("Receive %s from %s", progress, player_name)
+
+            #     # distribute questions as soon as each player joined
+            #     player_socket.sendall(s.encode_questions(self.__questions))
+
+            #     self.__playerCount += 1
+            #     # Hardcoding for now: start the game when 2 players joined
+            #     # TODO: move this to where it's appropriate (referee should start the game instead)
+            #     if self.__playerCount == 1:  # TODONOW: change back to 2
+            #         logger.info("Game starts")
+            #         self.broadcast("Game starts", s.encode_startgame())
+
+            #         # unblock all threads to start game
+            #         self.__gameStarts.release(self.__playerCount)
+            #         # self.__gameEnds = threading.Barrier(self.__playerCount)
+
+            # self.__gameStarts.wait()
+            # for _ in range(len(self.__questions)):
+            #     progress = s.decode_progress(player_socket.recv(2048))
+            #     logger.info("Receive %s from %s", progress, player_name)
                 # with self.__playerStateLock:
                 #     logger.debug("Acquired the player state lock")
                 #     self.__playerState[player_name] = progress
@@ -209,8 +229,7 @@ class Server:
             try:
                 with self.__playerSocketsLocks[player_socket]:
                     player_socket.sendall(encoded_message)
-                    logger.debug(f"Sent the broadcasted message to Player {
-                                 player_name, player_addr}: {str(summary)}")
+                    logger.debug("Sent the broadcasted message to Player {%s, %s}: %s", player_name, player_addr, summary)
             except:
                 logger.error(f"Failed to send to {player_name, player_addr}")
 
