@@ -42,11 +42,12 @@ class ServerState:
         self.__top5players: LeadersBoard = []
 
         # only main thread should access
-        self.__playerListeners: list[threading.Thread] = []
+        self.__listeners: list[threading.Thread] = []
 
         # game state / info
-        self.gameStarts = threading.Semaphore(0)
-        self.__gameEnds = None  # for now: will be initialized after the playerCount is finalized
+        self.__game_starts = threading.Semaphore(0)
+        # for now: will be initialized after the playerCount is finalized
+        self.__game_ends = None
 
         self.__questions = questions  # TODO: change later to receive from the referee
         self.__questions_lock = threading.Lock()
@@ -55,7 +56,7 @@ class ServerState:
         return self.__addr
 
     def add_listener(self, listener):
-        self.__playerListeners.append(listener)
+        self.__listeners.append(listener)
 
     def add_player(self, psocket: Socket, paddr: Addr, pname: Name, plock: threading.Lock):
         logger.debug("Adding player {%s, %s, %s}", pname, psocket, paddr)
@@ -63,13 +64,6 @@ class ServerState:
         with self.__player_states_lock:
             self.__player_states[(psocket, paddr)] = (
                 pname, [], plock, threading.Semaphore(0))
-
-            # Hardcoding for now: start the game when 2 players joined
-            # TODO: move this to where it's appropriate (referee should start the game instead)
-            n_players = len(self.__player_states)
-            if n_players == 2:
-                # plus the server main thread
-                self.gameStarts.release()
 
         logger.info("Added player {%s, %s, %s}",
                     pname, psocket.getsockname(), paddr)
@@ -146,3 +140,9 @@ class ServerState:
     def set_questions(self, new_questions):
         with self.__questions_lock:
             self.__questions = new_questions
+
+    def wait_game_start(self):
+        self.__game_starts.acquire()
+
+    def signal_game_start(self):
+        self.__game_starts.release()

@@ -7,8 +7,8 @@ from . import utils
 
 class RoleSelectionScene(AbstractScene):
     def start_scene(self):
-        referee_box = self.__create_role_choice(0)
-        player_box = self.__create_role_choice(100)
+        referee_box = utils.create_button(self.get_screen(), (0, 0))
+        player_box = utils.create_button(self.get_screen(), (0, 100))
 
         referee_box_highlight = False
         player_box_highlight = False
@@ -28,11 +28,15 @@ class RoleSelectionScene(AbstractScene):
                     player_box_highlight = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN and referee_box[0].collidepoint(event.pos):
-                    # TODO(nickbar01234) - Handle sending information
-                    return SceneState.QUIT
+                    self.get_network().send_role("referee")
+                    self.get_player_state().set_is_player(False)
+                    self.get_player_state().role_selection_barrier.release()
+                    return SceneState.REFEREE_START_SCENE
 
                 if event.type == pygame.MOUSEBUTTONDOWN and player_box[0].collidepoint(event.pos):
-                    # TODO(nickbar01234) - Handle sending information
+                    self.get_network().send_role("player")
+                    self.get_player_state().set_is_player(True)
+                    self.get_player_state().role_selection_barrier.release()
                     return SceneState.PLAYER_NAME
 
             self.get_screen().fill("white")
@@ -51,16 +55,3 @@ class RoleSelectionScene(AbstractScene):
                 self.get_screen().blit(text, text_rect)
 
             pygame.display.flip()
-
-    def __create_role_choice(self, margin_y: int):
-        border = 3
-        width, height = 512, 64
-        center_x, center_y = self.get_screen().get_rect().center
-        textbox_border = pygame.Rect(0, 0, width, height)
-        textbox_border.center = (center_x, center_y)
-        textbox_border = textbox_border.move(0, margin_y)
-        left_x, left_y = textbox_border.topleft
-        textbox = pygame.Rect(0, 0, width - border * 2, height - border * 2)
-        textbox.topleft = (left_x + border, left_y + border)
-
-        return textbox, textbox_border

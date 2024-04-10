@@ -1,7 +1,6 @@
 import sys
 import pygame
 import pyperclip
-import threading
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
@@ -9,10 +8,6 @@ from . import utils
 
 
 class NameScene(AbstractScene):
-    def __init__(self, screen, state, network, network_barrier: threading.Semaphore):
-        super().__init__(screen, state, network)
-        self.__network_barrier = network_barrier
-
     def start_scene(self):
         # TODO(nickbar01234) - Need to extract into a input class
         clock = pygame.time.Clock()
@@ -32,8 +27,8 @@ class NameScene(AbstractScene):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.get_network().send_name(name)
-                        self.__network_barrier.release()
-                        return SceneState.PLAYER_QUESTION
+                        self.get_player_state().player_start_barrier.release()
+                        return SceneState.PLAYER_WAIT
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         name = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:

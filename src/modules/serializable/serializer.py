@@ -1,9 +1,14 @@
 import pickle
 from ..type.aliases import *
-
 import logging
+from typing import Literal
+from ..question.abstract_question_builder import AbstractQuestionBuilder
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+
+
+type game_role = Literal["player"] | Literal["referee"]
 
 '''
 Message format:
@@ -13,6 +18,7 @@ Message format:
     }
 '''
 CONNECT = 'connect'
+ROLE = 'role'
 NAME = 'name'
 SUCCESS = 'success'
 START = 'start'
@@ -22,6 +28,8 @@ LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
 END = 'end'
 LEAVE = 'leave'
+
+REFEREE_START_GAME = "referee_start"
 
 
 class InvalidMessageError(Exception):
@@ -45,16 +53,24 @@ def decode(data: bytes, action: str):
             raise InvalidMessageError
 
 
+def decode_response(data: bytes, action: str) -> bool:
+    return decode(data, action) == SUCCESS
+
 #
 # Message Protocol for establishing connection
 #
+
 
 def encode_connect_success():
     return encode(CONNECT, SUCCESS)
 
 
-def encode_name_response():
-    return encode(NAME, SUCCESS)
+def decode_connect_response(data: bytes) -> bool:
+    return decode_response(data, CONNECT)
+
+#
+# Message Protocol for sending name
+#
 
 
 def encode_name(name: str):
@@ -65,17 +81,33 @@ def decode_name(data: bytes) -> Name:
     return decode(data, NAME)
 
 
-def decode_response(data: bytes, action: str) -> bool:
-    return decode(data, action) == SUCCESS
-
-
-def decode_connect_response(data: bytes) -> bool:
-    return decode_response(data, CONNECT)
+def encode_name_response():
+    return encode(NAME, SUCCESS)
 
 
 def decode_name_response(data: bytes) -> bool:
     return decode_response(data, NAME)
 
+#
+# Message Protocol for sending client role (player/referee)
+#
+
+
+def encode_role(role: game_role):
+    logger.info("Game role %s", role)
+    return encode(ROLE, role)
+
+
+def decode_role(data: bytes) -> game_role:
+    return decode(data, ROLE)
+
+
+def encode_role_response():
+    return encode(ROLE, SUCCESS)
+
+
+def decode_role_response(data: bytes) -> bool:
+    return decode_response(data, ROLE)
 
 #
 # Message Protocol for distributing questions
@@ -177,3 +209,11 @@ def encode_leave():
 
 def decode_leave(data: bytes):
     return decode(data, LEAVE)
+
+
+def encode_referee_startgame():
+    return encode(REFEREE_START_GAME, "")
+
+
+def decode_referee_startgame(data: bytes):
+    return decode(data, REFEREE_START_GAME)
