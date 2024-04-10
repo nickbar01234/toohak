@@ -17,8 +17,8 @@ type Progress = list[bool]  # TODO: again global type file?
 def synchronized(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        with self._lock:
-            return func(self, *args, **kwargs)
+        # with self._lock:
+        return func(self, *args, **kwargs)
     return wrapper
 
 
