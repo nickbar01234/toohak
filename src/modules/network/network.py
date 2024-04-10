@@ -53,6 +53,7 @@ class Network:
         return
 
     def receive_leadersboard(self):
+        self.client.setblocking(True)
         leadersboard = s.decode_leadersboard(self.client.recv(2048))
         logger.debug("Received leader's board from server: %s", leadersboard)
         return leadersboard

@@ -88,7 +88,7 @@ class Server:
 
     def listener(self, client: socket.socket, addr):
         logger.info("Listening from %s", addr)
-        # TODO(nickbar01234) - Handle referee
+        # TODO(nickbar01234) - Handle referee or player
         self.player_listener(client, addr)
 
     # For each listener's thread to receive message form a specific player
@@ -104,18 +104,21 @@ class Server:
             player_socket.sendall(s.encode_name_response())
             logger.info("Player's name %s from %s", player_name, player_addr)
 
-            self.__playerSockets[player_socket] = (player_addr, player_name)
-            # TODO: with line above -> make it atomic?
-            self.__playerSocketsLocks[player_socket] = threading.Lock()
+            # make the whole block atomic?
+            with self.__playerCountLock:  # TODO: temporarily use this to guard the whole sec
 
-            with self.__playerCountLock:
+                self.__playerSockets[player_socket] = (
+                    player_addr, player_name)
+                self.__playerSocketsLocks[player_socket] = threading.Lock()
+
+                # distribute questions as soon as each player joined
+                player_socket.sendall(s.encode_questions(self.__questions))
+
                 self.__playerCount += 1
-                # TODO: move this to where it's appropriate
-                if self.__playerCount == 2:
-                    # broadcasting to let the clients know game starts
+                # Hardcoding for now: start the game when 2 players joined
+                # TODO: move this to where it's appropriate (referee should start the game instead)
+                if self.__playerCount == 1:  # TODONOW: change back to 2
                     logger.info("Game starts")
-                    self.broadcast("Send questions",
-                                   s.encode_questions(self.__questions))
                     self.broadcast("Game starts", s.encode_startgame())
 
                     # unblock all threads to start game
@@ -125,13 +128,17 @@ class Server:
             for _ in range(len(self.__questions)):
                 progress = s.decode_progress(player_socket.recv(2048))
                 logger.info("Receive %s from %s", progress, player_name)
-                # with self.__playerStateLock:
-                #     self.__playerState[player_name] = progress
-                #     playerStateList = self.__playerState.items()
-                #     dict(sorted(playerStateList,
-                #          key=lambda item: item[1][0], reverse=True))
-                #     new_top5players = list(
-                #         map(lambda x: x[0], playerStateList[:5]))
+                with self.__playerStateLock:
+                    logger.debug("Acquired the player state lock")
+                    self.__playerState[player_name] = progress
+
+                    player_state_list = self.__playerState.items()
+                    dict(sorted(player_state_list,
+                         key=lambda item: item[1][0], reverse=True))
+                    new_top5players = list(
+                        map(lambda x: x[0], player_state_list[:5]))
+                    logger.debug("new_top5players: %s", new_top5players)
+                logger.debug("Released the player state lock")
 
                 #     with self.__top5playersLock:
                 #         if new_top5players != self.__top5players:
@@ -199,7 +206,8 @@ class Server:
             try:
                 with self.__playerSocketsLocks[player_socket]:
                     player_socket.sendall(encoded_message)
-                    logger.debug(f"Sent the broadcasted message to Player { player_name, player_addr}: {str(summary)}")
+                    logger.debug(f"Sent the broadcasted message to Player {
+                                 player_name, player_addr}: {str(summary)}")
             except:
                 logger.error(f"Failed to send to {player_name, player_addr}")
 

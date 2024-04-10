@@ -10,6 +10,7 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 
 class GameState(Enum):
+    WAIT = auto()
     START = auto()
     END = auto()
 
@@ -26,7 +27,7 @@ class PlayerState:
         self.__progress: list[bool] = []
         self.__init_time = None
         self.__leadersboard = []
-        self.__game_state = GameState.START
+        self.__game_state = GameState.WAIT
 
     def get_name(self):
         return self.__name
@@ -76,6 +77,9 @@ class PlayerState:
 
     def set_leadersboard(self, leadersboard):
         self.__leadersboard = leadersboard
+
+    def set_game_starts(self):
+        self.__game_state = GameState.START
 
     def game_ends(self):
         return self.__game_state == GameState.END

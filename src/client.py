@@ -30,6 +30,7 @@ class Client:
             scene = SCENES[scene].start_scene()
 
             if (scene == SceneState.PLAYER_QUESTION):
+                logger.info("Client starting a listener thread.")
                 listener_thread = threading.Thread(
                     target=self.player_listener, daemon=True)
                 listener_thread.start()
@@ -41,6 +42,8 @@ class Client:
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
         self.network.receive_game_start()
+        self.state.set_game_starts()
+        logger.info("Received game starts signal from server.")
 
         while True:
             leadersboard = self.network.receive_leadersboard()
