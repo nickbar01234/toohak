@@ -4,12 +4,6 @@ from ..question.type.abstract_question import AbstractQuestion
 from datetime import datetime
 import threading
 from enum import Enum, auto
-<< << << < Updated upstream
-== == == =
->>>>>> > Stashed changes
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 
 class GameState(Enum):
@@ -31,7 +25,9 @@ class PlayerState:
         self.__init_time = None
         self.__leadersboard = []
         self.__leadersboardLock = threading.Lock()
+
         self.__game_state = GameState.START
+        self.game_starts = threading.Semaphore(0)
 
     def get_name(self):
         return self.__name

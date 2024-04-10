@@ -11,6 +11,7 @@ class Client:
     def __init__(self):
         self.network = Network()
         self.state = PlayerState(self.network)
+        self.network_barrier = threading.Semaphore(0)
 
     def start(self):
         screen = pygame.display.set_mode((STYLE["width"], STYLE["height"]))
@@ -19,30 +20,33 @@ class Client:
 
         SCENES = {
             # TODO: EntryScene can remove network -> get from player's self.state
-            SceneState.ENTRY: EntryScene(screen, self.state, self.network),
+            SceneState.ENTRY: EntryScene(screen, self.state, self.network, self.network_barrier),
             SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
             SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
             SceneState.QUIT: QuitScene(screen, self.state, self.network)
         }
 
+        listener_thread = threading.Thread(
+            target=self.player_listener, daemon=True)
+        listener_thread.start()
+
         while True:
             scene = SCENES[scene].start_scene()
 
-            if (scene == SceneState.PLAYER_QUESTION):
-                logger.info("Client starting a listener thread.")
-                listener_thread = threading.Thread(
-                    target=self.player_listener, daemon=True)
-                listener_thread.start()
+            if scene == SceneState.PLAYER_QUESTION:
+                self.state.game_starts.acquire()
 
     def player_listener(self):
+        self.network_barrier.acquire()
+
         logger.info(
             "Listener thread started - waits for updates from server for leader's board / terminate sig.")
 
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
         self.network.receive_game_start()
-        self.state.set_game_starts()
+        self.state.game_starts.release()
         logger.info("Received game starts signal from server.")
 
         while True:

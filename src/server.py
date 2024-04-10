@@ -125,20 +125,23 @@ class Server:
                     self.__gameStarts.release(self.__playerCount)
                     # self.__gameEnds = threading.Barrier(self.__playerCount)
 
+            self.__gameStarts.wait()
             for _ in range(len(self.__questions)):
                 progress = s.decode_progress(player_socket.recv(2048))
                 logger.info("Receive %s from %s", progress, player_name)
-                with self.__playerStateLock:
-                    logger.debug("Acquired the player state lock")
-                    self.__playerState[player_name] = progress
+                # with self.__playerStateLock:
+                #     logger.debug("Acquired the player state lock")
+                #     self.__playerState[player_name] = progress
 
-                    player_state_list = self.__playerState.items()
-                    dict(sorted(player_state_list,
-                         key=lambda item: item[1][0], reverse=True))
-                    new_top5players = list(
-                        map(lambda x: x[0], player_state_list[:5]))
-                    logger.debug("new_top5players: %s", new_top5players)
-                logger.debug("Released the player state lock")
+                #     player_state_list = self.__playerState.items()
+                #     logger.debug("player_state_list: %s", player_state_list)
+
+                #     dict(sorted(player_state_list,
+                #          key=lambda item: item[1][0], reverse=True))
+                #     new_top5players = list(
+                #         map(lambda x: x[0], player_state_list[:5]))
+                #     logger.debug("new_top5players: %s", new_top5players)
+                # logger.debug("Released the player state lock")
 
                 #     with self.__top5playersLock:
                 #         if new_top5players != self.__top5players:

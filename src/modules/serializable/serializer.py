@@ -33,7 +33,7 @@ def encode(action, msg):
 
 
 def decode(data: bytes, action: str):
-    # logger.debug("Decoding binary: %s for %s", data, action)
+    logger.debug("Decoding binary: %s for %s", data, action)
     decoded = pickle.loads(data)
     match decoded:
         case {'action': action2, 'msg': msg} if action2 == action:
@@ -97,7 +97,7 @@ Message Protocol for server to signal players game start
 
 
 def encode_startgame():
-    return encode(START, "")
+    return encode(START, "start")
 
 
 def decode_startgame(data: bytes):

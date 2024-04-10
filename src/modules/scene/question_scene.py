@@ -7,6 +7,10 @@ from .styles import STYLE
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 
+import logging
+logger = logging.getLogger()
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+
 
 class QuestionScene(AbstractScene):
     # TODO: add the network choice for updating the player's progress (question scene) to the server after merge
@@ -68,7 +72,9 @@ class QuestionScene(AbstractScene):
         self.get_player_state().set_progress(correctness)
 
         # send update to the server
+        print("sending progress to server")
         self.get_network().update_progress(self.get_player_state().get_progress())
+        print("sent to server")
 
         # update scene states
         self.q_idx += 1

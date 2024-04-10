@@ -42,10 +42,6 @@ class Network:
     def disconnect(self):
         self.client.close()
 
-        # may raise InvalidMessage / timeout exception
-        s.decode_connect_response(self.client.recv(2048))
-        logger.info("Connection established.")
-
     @synchronized
     def send_name(self, name):
         self.client.sendall(s.encode_name(name))
@@ -79,4 +75,6 @@ class Network:
 
     @synchronized
     def receive_game_start(self):
-        return s.decode_startgame(self.client.recv(2048))
+        start = s.decode_startgame(self.client.recv(2048))
+        logger.debug("starting %s", start)
+        return start
