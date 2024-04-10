@@ -1,6 +1,7 @@
 import time
 import sys
 import pygame
+
 from .abstract_scene import AbstractScene
 from .styles import STYLE
 
@@ -14,9 +15,7 @@ class QuitScene(AbstractScene):
 
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit(0)
+                self.handle_quit(event)
 
             self.get_screen().fill("white")
             self.get_screen().blit(text, rect)

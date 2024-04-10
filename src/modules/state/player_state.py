@@ -1,3 +1,5 @@
+from enum import Enum, auto
+import threading
 from datetime import datetime
 from ..question.type.abstract_question import AbstractQuestion
 from ..serializable import serializer as s
@@ -6,19 +8,22 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
-from enum import Enum, auto
 
 class GameState(Enum):
     START = auto()
     END = auto()
+
 
 class PlayerState:
     def __init__(self, network):
         # TODO - Change type hint for network
         self.__network = network
         self.__name = None
+
+        self.__questions_lock = threading.Lock()
+        self.__questions_condition = threading.Condition(self.__questions_lock)
         self.__questions = []
-        self.__progress : list[bool] = []
+        self.__progress: list[bool] = []
         self.__init_time = None
         self.__leadersboard = []
         self.__game_state = GameState.START
@@ -35,14 +40,19 @@ class PlayerState:
         self.__name = name
 
     def get_questions(self):
-        return self.__questions
+        with self.__questions_lock:
+            while len(self.__questions) == 0:
+                self.__questions_condition.wait()
+            return self.__questions
 
     def set_questions(self, questions: list[AbstractQuestion]):
         if not isinstance(questions, list):
             raise RuntimeError(
                 f"Expect name to be of type list, but received type {type(questions)}")
 
-        self.__questions = questions
+        with self.__questions_lock:
+            self.__questions = questions
+            self.__questions_condition.notify()
 
     def get_progress(self):
         return self.__progress
@@ -63,14 +73,12 @@ class PlayerState:
 
     def get_leadersboard(self):
         return self.__leadersboard
-    
+
     def set_leadersboard(self, leadersboard):
         self.__leadersboard = leadersboard
-    
+
     def game_ends(self):
         return self.__game_state == GameState.END
-    
+
     def set_game_ends(self):
         self.__game_state = GameState.END
-
-

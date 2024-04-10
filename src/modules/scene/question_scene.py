@@ -9,22 +9,7 @@ from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBu
 
 
 class QuestionScene(AbstractScene):
-    # def __init__(self, screen, player_state, network):
-    #     super().__init__(screen, player_state, network)
-    #     player_state.set_questions([
-    #         MultipleChoiceQuestionBuilder()
-    #         .add_question("What's Tony's last name")
-    #         .add_option("Doan")
-    #         .add_option("Xu")
-    #         .add_option("Huang")
-    #         .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
-    #         .build()
-    #     ])
-
     # TODO: add the network choice for updating the player's progress (question scene) to the server after merge
-
-    # TODO: add the network choice for updating the player's progress (question scene) to the server after merge
-
     def start_scene(self):
         # Now initialize the questions when starting the scene
         self.q_idx = 0
@@ -39,11 +24,8 @@ class QuestionScene(AbstractScene):
 
         while True:
             for event in pg.event.get():
+                self.handle_quit(event)
                 match event.type:
-                    case pg.QUIT:
-                        pg.quit()
-                        sys.exit(0)
-
                     case pg.MOUSEBUTTONDOWN:
                         if self.submit_box.collidepoint(event.pos):
                             # note: a janky way of detecting all questions have been answered (we can definitely change this later)
@@ -85,7 +67,7 @@ class QuestionScene(AbstractScene):
         self.__draw_correctness(correctness)
         self.get_player_state().set_progress(correctness)
 
-        # send update to the server 
+        # send update to the server
         self.get_network().update_progress(self.get_player_state().get_progress())
 
         # update scene states

@@ -27,34 +27,39 @@ questions = [
     .add_option("Wed")
     .add_solution(MultipleChoiceSolutionBuilder().add_solution("Mon").build())
     .build()
-    ]
+]
 
-type Name = str 
+type Name = str
 type PlayerProgress = tuple[int, list[bool]]
 type Address = str
+
 
 class Server:
     def __init__(self, ip, port):
         # server info
         self.__addr = (ip, port)
 
+        self.__referee_sockets_lock = threading.Lock()
+        self.__referee_sockets = []
+
         # players states
         self.__playerCount = 0
         self.__playerCountLock = threading.Lock()
 
-        self.__playerSockets: dict[socket.socket, tuple[str, Name]] = {} 
+        self.__playerSockets: dict[socket.socket, tuple[str, Name]] = {}
         self.__playerSocketsLocks: dict[socket.socket, threading.Lock] = {}
-        self.__playerState: dict[Name, PlayerProgress] = {}  # TODO: don't think a Lock is needed since each listener thread is updating its own key-value pair
+        # TODO: don't think a Lock is needed since each listener thread is updating its own key-value pair
+        self.__playerState: dict[Name, PlayerProgress] = {}
         self.__playerStateLock = threading.Lock()
-        self.__playerListeners : list[threading.Thread] = []
+        self.__playerListeners: list[threading.Thread] = []
 
         self.__top5players: list[tuple[Name, int]] = []
         self.__top5playersLock = threading.Lock()
 
         # game state / info
-        self.__questions = questions # TODO: change later to receive from the referee
-        self.__gameStarts = threading.Semaphore(0) # block at first
-        self.__gameEnds = None # will be initialized after the playerCount is finalized
+        self.__questions = questions  # TODO: change later to receive from the referee
+        self.__gameStarts = threading.Semaphore(0)  # block at first
+        self.__gameEnds = None  # will be initialized after the playerCount is finalized
 
     #  Start the server and wait for client connection
     def start(self):
@@ -64,92 +69,124 @@ class Server:
         logger.info("Server started, listening on %s:%s",
                     self.__addr[0], self.__addr[1])
 
-        while True:
-            player_socket, player_addr = server_socket.accept()
-            player_socket.sendall(s.encode_connect_success())
-            logger.info(f"New connection from {player_addr}, {self.__playerCount}")
+        try:
+            while True:
+                client, addr = server_socket.accept()
+                client.sendall(s.encode_connect_success())
+                logger.info("New connection from %s, %s",
+                            addr, self.__playerCount)
 
-            player_listener = threading.Thread(
-                target=self.player_listener, args=(player_socket, player_addr))
-            self.__playerListeners.append(player_listener)
-            player_listener.start()
-        
-        # TODO: add a graceful way to terminate the server & wait for the player threads (I.e. exit while loop)? 
+                player_listener = threading.Thread(
+                    target=self.player_listener, args=(client, addr), daemon=True)
+                self.__playerListeners.append(player_listener)
+                player_listener.start()
+        except KeyboardInterrupt:
+            server_socket.close()
+        # TODO: add a graceful way to terminate the server & wait for the player threads (I.e. exit while loop)?
         # for listener in self.__playerListeners:
-        #     listener.join() 
+        #     listener.join()
 
+    def listener(self, client: socket.socket, addr):
+        logger.info("Listening from %s", addr)
+        # TODO(nickbar01234) - Handle referee
+        self.player_listener(client, addr)
 
     # For each listener's thread to receive message form a specific player
-    def player_listener(self, player_socket, player_addr):
+
+    def player_listener(self, player_socket: socket.socket, player_addr):
         try:
             logger.info(
-                f"Listener thread started to listen from {player_addr}")
-            # finalize establishing connection by receiving player's name
-            player_name = s.decode_name(player_socket.recv(2048)) # may raise InvalidMessage exception
-            logger.info(f"Player's name from {player_name, player_addr} is {player_name}")
-            self.__playerSockets[player_socket] = (player_addr, player_name)
-            self.__playerSocketsLocks[player_socket] = threading.Lock() # TODO: with line above -> make it atomic?
-            player_socket.sendall(s.encode_name_response())
+                "Listener thread started to listen from %s", player_addr)
 
-            # Update server's state
+            # finalize establishing connection by receiving player's name
+            # may raise InvalidMessage exception
+            player_name = s.decode_name(player_socket.recv(2048))
+            player_socket.sendall(s.encode_name_response())
+            logger.info("Player's name %s from %s", player_name, player_addr)
+
+            self.__playerSockets[player_socket] = (player_addr, player_name)
+            # TODO: with line above -> make it atomic?
+            self.__playerSocketsLocks[player_socket] = threading.Lock()
+
             with self.__playerCountLock:
                 self.__playerCount += 1
-
                 # TODO: move this to where it's appropriate
                 if self.__playerCount == 2:
-                    # broadcasting to let the clients know game starts 
-                    logger.info(f"Game starts.")
-                    self.broadcast("game starts", s.encode_startgame())
+                    # broadcasting to let the clients know game starts
+                    logger.info("Game starts")
+                    self.broadcast("Send questions",
+                                   s.encode_questions(self.__questions))
+                    self.broadcast("Game starts", s.encode_startgame())
 
-                    self.__gameStarts.release(self.__playerCount) # unblock all threads to start game
-                    self.__gameEnds = threading.Barrier(self.__playerCount)
+                    # unblock all threads to start game
+                    self.__gameStarts.release(self.__playerCount)
+                    # self.__gameEnds = threading.Barrier(self.__playerCount)
 
+            for _ in range(len(self.__questions)):
+                progress = s.decode_progress(player_socket.recv(2048))
+                logger.info("Receive %s from %s", progress, player_name)
+                # with self.__playerStateLock:
+                #     self.__playerState[player_name] = progress
+                #     playerStateList = self.__playerState.items()
+                #     dict(sorted(playerStateList,
+                #          key=lambda item: item[1][0], reverse=True))
+                #     new_top5players = list(
+                #         map(lambda x: x[0], playerStateList[:5]))
 
-            with self.__playerStateLock:
-                self.__playerState[player_name] = []
-            
+                #     with self.__top5playersLock:
+                #         if new_top5players != self.__top5players:
+                #             self.__top5players = new_top5players
+                #             encoded = s.encode_leadersboard(self.__top5players)
+                #             self.broadcast(self.__top5players, encoded)
 
-            # TODO: Distribution questions - do i need to wait for a signal from the referee?
-            player_socket.sendall(s.encode_questions(self.__questions))
+            # while True:
+            #     pass
+            # player_socket.sendall(s.encode_name_response())
 
-            # TODO: wait for start signal from the referee; For now, start the game once 2 players have joined 
-            logger.info(f"Player {player_name, player_addr} is waiting for the game to start")
-            self.__gameStarts.wait()
-            
-            # Handling player's status update & broadcast updated leader's board
-            logger.info(f"Waiting for update from Player {player_name, player_addr}")
-            for i in range(len(self.__questions)): # should receive exactly num_questions update
-                playerProgress = s.decode_progress(player_socket.recv(2048)) # may throw InvalidMessage
-                logger.info(f"Receive from {player_name, player_addr}: {playerProgress}")
-                with self.__playerStateLock:
-                    self.__playerState[player_name] = playerProgress
-                    playerStateList = self.__playerState.items()
-                    dict(sorted(playerStateList, key = lambda item: item[1][0], reverse=True))
-                    new_top5players = list(map(lambda x: x[0], playerStateList[:5]))
-                
-                    with self.__top5playersLock:
-                        if new_top5players != self.__top5players:   
-                            self.__top5players = new_top5players
-                            encoded = s.encode_leadersboard(self.__top5players)
-                            self.broadcast(self.__top5players, encoded)
-                
-            # Players have finished all the questions 
-            logger.info(f"Player {player_name, player_addr} has finished all the questions")
+            # Update server's state
+            # with self.__playerCountLock:
+            #     self.__playerCount += 1
 
-            # Game ends
-            i = self.__gameEnds.wait()
-            if i == 0: # only one player needs to broadcast a message & log
-                self.broadcast("game ends", s.encode_le)
-                logger.info(f"Game ends: all players finished")
-            
-            # TODO: how long does the player stay connected here (auto exit timeout?)
-            player_socket.settimeout(120) # auto log out after 2 min
-            s.decode_leave(player_socket.recv(1024))
-            logger.info(f"Player {player_name, player_addr} left. Listener threading exiting..")
+            # with self.__playerStateLock:
+            #     self.__playerState[player_name] = []
 
+            # # TODO: Distribution questions - do i need to wait for a signal from the referee?
+            # player_socket.sendall(s.encode_questions(self.__questions))
+
+            # # TODO: wait for start signal from the referee; For now, start the game once 2 players have joined
+            # logger.info(
+            #     f"Player {player_name, player_addr} is waiting for the game to start")
+            # self.__gameStarts.wait()
+
+            # # Handling player's status update & broadcast updated leader's board
+            # logger.info(f"Waiting for update from Player {
+            #             player_name, player_addr}")
+            # # should receive exactly num_questions update
+            # for i in range(len(self.__questions)):
+            #     playerProgress = s.decode_progress(
+            #         player_socket.recv(2048))  # may throw InvalidMessage
+            #     logger.info(f"Receive from {player_name, player_addr}: {
+            #                 playerProgress}")
+
+            # # Players have finished all the questions
+            # logger.info(
+            #     f"Player {player_name, player_addr} has finished all the questions")
+
+            # # Game ends
+            # i = self.__gameEnds.wait()
+            # if i == 0:  # only one player needs to broadcast a message & log
+            #     self.broadcast("game ends", s.encode_le)
+            #     logger.info(f"Game ends: all players finished")
+
+            # # TODO: how long does the player stay connected here (auto exit timeout?)
+            # player_socket.settimeout(120)  # auto log out after 2 min
+            # s.decode_leave(player_socket.recv(1024))
+            # logger.info(
+            #     f"Player {player_name, player_addr} left. Listener threading exiting..")
         except:
-            logger.error(f"Lost the connection with {player_name, player_addr}")
-        
+            logger.error(f"Lost the connection with {
+                         player_name, player_addr}")
+
         finally:
             if player_socket in self.__playerSockets:
                 with self.__playerSocketsLocks[player_socket]:
@@ -162,12 +199,13 @@ class Server:
             try:
                 with self.__playerSocketsLocks[player_socket]:
                     player_socket.sendall(encoded_message)
-                    logger.debug(f"Sent the broadcasted message to Player {player_name, player_addr}: {str(summary)}")
+                    logger.debug(f"Sent the broadcasted message to Player {
+                                 player_name, player_addr}: {str(summary)}")
             except:
                 logger.error(f"Failed to send to {player_name, player_addr}")
 
 
 if __name__ == "__main__":
     IP = socket.gethostbyname(socket.gethostname())
-    PORT = 5555
+    PORT = 9999
     Server(IP, PORT).start()
