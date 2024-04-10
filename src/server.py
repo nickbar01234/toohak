@@ -184,8 +184,8 @@ class Server:
             # logger.info(
             #     f"Player {player_name, player_addr} left. Listener threading exiting..")
         except:
-            logger.error(f"Lost the connection with {
-                         player_name, player_addr}")
+            # logger.error(f"Lost the connection with {player_name, player_addr}")
+            logger.error(f"Lost the connection with")
 
         finally:
             if player_socket in self.__playerSockets:
@@ -199,8 +199,7 @@ class Server:
             try:
                 with self.__playerSocketsLocks[player_socket]:
                     player_socket.sendall(encoded_message)
-                    logger.debug(f"Sent the broadcasted message to Player {
-                                 player_name, player_addr}: {str(summary)}")
+                    logger.debug(f"Sent the broadcasted message to Player { player_name, player_addr}: {str(summary)}")
             except:
                 logger.error(f"Failed to send to {player_name, player_addr}")
 

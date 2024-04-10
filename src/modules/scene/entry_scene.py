@@ -28,7 +28,7 @@ class EntryScene(AbstractScene):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.get_network().connect(ip)
-                        self.__network_barrier.release()
+                        # self.__network_barrier.release()
                         # TODO: move this to separate scene
                         self.get_network().send_name("Fredkin" + str(random.randint(0, 100)))
                         return SceneState.PLAYER_QUESTION
