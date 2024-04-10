@@ -3,6 +3,7 @@ import pygame
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
+from . import utils
 
 
 class RoleSelectionScene(AbstractScene):
@@ -35,11 +36,12 @@ class RoleSelectionScene(AbstractScene):
 
                 if event.type == pygame.MOUSEBUTTONDOWN and player_box[0].collidepoint(event.pos):
                     # TODO(nickbar01234) - Handle sending information
-                    return SceneState.PLAYER_QUESTION
+                    return SceneState.PLAYER_NAME
 
             self.get_screen().fill("white")
 
-            self.__create_prompt()
+            utils.create_prompt(self.get_screen(
+            ), "Choose your role:", (0, self.get_screen().get_height() // 4))
 
             for (box, border), content, highlight in zip([referee_box, player_box], ["Refree", "Player"], [referee_box_highlight, player_box_highlight]):
                 pygame.draw.rect(self.get_screen(), pygame.Color(
@@ -52,14 +54,6 @@ class RoleSelectionScene(AbstractScene):
                 self.get_screen().blit(text, text_rect)
 
             pygame.display.flip()
-
-    def __create_prompt(self):
-        font = STYLE["font"]["title"]
-        text = font.render("Choose your role:", True, "black")
-        rect = text.get_rect()
-        rect.center = self.get_screen().get_rect().center
-        rect.y = self.get_screen().get_height() // 4
-        self.get_screen().blit(text, rect)
 
     def __create_role_choice(self, margin_y: int):
         border = 3

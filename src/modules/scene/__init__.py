@@ -4,4 +4,5 @@ from .quit_scene import QuitScene
 from .scene_state import SceneState
 from .question_scene import QuestionScene
 from .role_selection_scene import RoleSelectionScene
+from .name_scene import NameScene
 from .styles import STYLE
