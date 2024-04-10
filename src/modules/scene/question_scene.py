@@ -19,6 +19,9 @@ class QuestionScene(AbstractScene):
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
         self.submit_box = self.__create_submit_box()
+        self.leaderboard = [("Nicky", 1), ("Stephanie", 2),
+                            ("Tony", 3), ("Chen", 4), ("Liu", 5)]
+
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
 
@@ -44,7 +47,15 @@ class QuestionScene(AbstractScene):
                                     self.selected.add(option)
 
             self.get_screen().fill("white")
-            self.curr_question.draw(self.get_screen())
+            question_rect = self.curr_question.draw(self.get_screen())
+            for idx, (name, n_questions) in enumerate(self.leaderboard):
+                text = STYLE["font"]["text"].render(
+                    f"{name}: {n_questions}", True, (0, 0, 0))
+                text_rect = text.get_rect()
+                text_rect.midtop = question_rect.midbottom
+                text_rect.top = question_rect.bottom
+                text_rect = text_rect.move(0, question_rect.height + idx * 32)
+                self.get_screen().blit(text, text_rect)
 
             # draw submit box
             pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)
@@ -120,8 +131,9 @@ class QuestionScene(AbstractScene):
 
         # spacing between edge of screen and border of options zone that holds all options
         container = pg.Rect(0, 0, STYLE["width"] * 0.9, STYLE["height"] * 0.6)
-        container.center = self.get_screen().get_rect().center
-        container.bottom = self.get_screen().get_rect().bottom
+        container.top = self.get_screen().get_rect().centery
+        container.centerx = self.get_screen().get_rect().centerx
+        # container.bottom = self.get_screen().get_rect().bottom
 
         margin_x, margin_y = 16, 32
         width, height = container.width // 2, 100

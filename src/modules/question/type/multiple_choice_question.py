@@ -22,8 +22,9 @@ class MultipleChoiceQuestion(AbstractQuestion):
         text = font.render(self.get_question(), True, (0, 0, 0))
         rect = text.get_rect()
         rect.midtop = screen.get_rect().midtop
-        rect = rect.inflate(0, -50)
+        rect = rect.move(0, 50)
         screen.blit(text, rect)
+        return rect
 
     def serialize(self):
         return pickle.dumps(self)
