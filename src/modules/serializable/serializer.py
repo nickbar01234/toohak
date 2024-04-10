@@ -97,11 +97,11 @@ Message Protocol for server to signal players game start
 
 
 def encode_startgame():
-    return encode(START, "start")
+    return encode(START, START)
 
 
 def decode_startgame(data: bytes):
-    logger.debug("Decoding data to hopefully get startgame: {data}")
+    logger.debug("Decoding data to hopefully get startgame: %s", data)
     return decode(data, START)
 
 

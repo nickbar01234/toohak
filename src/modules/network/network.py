@@ -64,7 +64,6 @@ class Network:
 
     @synchronized
     def receive_leadersboard(self):
-        self.client.setblocking(True)
         leadersboard = s.decode_leadersboard(self.client.recv(2048))
         logger.debug("Received leader's board from server: %s", leadersboard)
         return leadersboard
@@ -75,6 +74,6 @@ class Network:
 
     @synchronized
     def receive_game_start(self):
-        start = s.decode_startgame(self.client.recv(2048))
-        logger.debug("starting %s", start)
+        data = self.client.recv(100_000)
+        start = s.decode_startgame(data)
         return start

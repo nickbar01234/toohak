@@ -1,6 +1,7 @@
 import logging
 import socket
 import threading
+import pickle
 import sys
 from modules import serializer as s
 from modules.question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
@@ -104,26 +105,29 @@ class Server:
             player_socket.sendall(s.encode_name_response())
             logger.info("Player's name %s from %s", player_name, player_addr)
 
+            player_socket.sendall(s.encode_questions(self.__questions))
             # make the whole block atomic?
-            with self.__playerCountLock:  # TODO: temporarily use this to guard the whole sec
+            # with self.__playerCountLock:  # TODO: temporarily use this to guard the whole sec
 
-                self.__playerSockets[player_socket] = (
-                    player_addr, player_name)
-                self.__playerSocketsLocks[player_socket] = threading.Lock()
+            #     self.__playerSockets[player_socket] = (
+            #         player_addr, player_name)
+            #     self.__playerSocketsLocks[player_socket] = threading.Lock()
 
-                # distribute questions as soon as each player joined
-                player_socket.sendall(s.encode_questions(self.__questions))
+            #     # distribute questions as soon as each player joined
+            #     player_socket.sendall(s.encode_questions(self.__questions))
+            #     player_socket.sendall(s.encode_startgame())
+            #     # self.broadcast("Game starts", s.encode_startgame())
 
-                self.__playerCount += 1
-                # Hardcoding for now: start the game when 2 players joined
-                # TODO: move this to where it's appropriate (referee should start the game instead)
-                if self.__playerCount == 1:  # TODONOW: change back to 2
-                    logger.info("Game starts")
-                    self.broadcast("Game starts", s.encode_startgame())
+            #     self.__playerCount += 1
+            # Hardcoding for now: start the game when 2 players joined
+            # TODO: move this to where it's appropriate (referee should start the game instead)
+            # if self.__playerCount == 1:  # TODONOW: change back to 2
+            #     logger.info("Game starts")
+            #     self.broadcast("Game starts", s.encode_startgame())
 
-                    # unblock all threads to start game
-                    self.__gameStarts.release(self.__playerCount)
-                    # self.__gameEnds = threading.Barrier(self.__playerCount)
+            #     # unblock all threads to start game
+            #     self.__gameStarts.release(self.__playerCount)
+            #     # self.__gameEnds = threading.Barrier(self.__playerCount)
 
             self.__gameStarts.wait()
             for _ in range(len(self.__questions)):
@@ -217,5 +221,5 @@ class Server:
 
 if __name__ == "__main__":
     IP = socket.gethostbyname(socket.gethostname())
-    PORT = 9999
+    PORT = 5557
     Server(IP, PORT).start()

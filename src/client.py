@@ -38,6 +38,8 @@ class Client:
                 self.state.game_starts.acquire()
 
     def player_listener(self):
+        logger.info("Runing listener")
+
         self.network_barrier.acquire()
 
         logger.info(
@@ -45,7 +47,7 @@ class Client:
 
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
-        self.network.receive_game_start()
+        # self.network.receive_questions()
         self.state.game_starts.release()
         logger.info("Received game starts signal from server.")
 
