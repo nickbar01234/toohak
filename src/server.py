@@ -111,67 +111,69 @@ class Server:
             player_socket.sendall(s.encode_name_response())
             logger.info("Player's name %s from %s", player_name, player_addr)
 
-            player_socket.sendall(s.encode_questions(self.__questions))
-            time.sleep(1)
-            player_socket.sendall(s.encode_startgame())
+            # player_socket.sendall(s.encode_questions(self.__questions))
+            # time.sleep(1)
+            # player_socket.sendall(s.encode_startgame())
 
-            with self.__player_state_lock:
-                self.__player_state[(player_socket, player_addr)] = (
-                    player_name, [])
+            # with self.__player_state_lock:
+            #     self.__player_state[(player_socket, player_addr)] = (
+            #         player_name, [])
 
-            # TODO(nickbar01234) - Block until signal
-            while True:
-                data = player_socket.recv(2048)
-                if data == 0:
-                    break
+            # # TODO(nickbar01234) - Block until signal
+            # while True:
+            #     data = player_socket.recv(2048)
+            #     if data == 0:
+            #         break
             # player_socket.sendall(s.encode_questions(self.__questions))
             # player_socket.sendall(s.encode_startgame())
-            # # make the whole block atomic?
-            # # with self.__playerCountLock:  # TODO: temporarily use this to guard the whole sec
 
-            # #     self.__playerSockets[player_socket] = (
-            # #         player_addr, player_name)
-            # #     self.__playerSocketsLocks[player_socket] = threading.Lock()
+            # make the whole block atomic?
+            with self.__playerCountLock:  # TODO: temporarily use this to guard the whole sec
 
-            # #     # distribute questions as soon as each player joined
-            # #     player_socket.sendall(s.encode_questions(self.__questions))
-            # #     player_socket.sendall(s.encode_startgame())
-            # #     # self.broadcast("Game starts", s.encode_startgame())
+                self.__playerSockets[player_socket] = (
+                    player_addr, player_name)
+                self.__playerSocketsLocks[player_socket] = threading.Lock()
 
-            # #     self.__playerCount += 1
-            # # Hardcoding for now: start the game when 2 players joined
-            # # TODO: move this to where it's appropriate (referee should start the game instead)
-            # # if self.__playerCount == 1:  # TODONOW: change back to 2
-            # #     logger.info("Game starts")
-            # #     self.broadcast("Game starts", s.encode_startgame())
+                # distribute questions as soon as each player joined
+                player_socket.sendall(s.encode_questions(self.__questions))
+                time.sleep(1)
+                player_socket.sendall(s.encode_startgame())
+                self.broadcast("Game starts", s.encode_startgame())
 
-            # #     # unblock all threads to start game
-            # #     self.__gameStarts.release(self.__playerCount)
-            # #     # self.__gameEnds = threading.Barrier(self.__playerCount)
+                self.__playerCount += 1
+            # Hardcoding for now: start the game when 2 players joined
+            # TODO: move this to where it's appropriate (referee should start the game instead)
+            # if self.__playerCount == 1:  # TODONOW: change back to 2
+            #     logger.info("Game starts")
+            #     self.broadcast("Game starts", s.encode_startgame())
 
-            # # self.__gameStarts.wait()
-            # for _ in range(len(self.__questions)):
-            #     progress = s.decode_progress(player_socket.recv(2048))
-            #     logger.info("Receive %s from %s", progress, player_name)
-                # with self.__playerStateLock:
-                #     logger.debug("Acquired the player state lock")
-                #     self.__playerState[player_name] = progress
+            #     # unblock all threads to start game
+            #     self.__gameStarts.release(self.__playerCount)
+                # self.__gameEnds = threading.Barrier(self.__playerCount)
 
-                #     player_state_list = self.__playerState.items()
-                #     logger.debug("player_state_list: %s", player_state_list)
+            # self.__gameStarts.wait()
+            for _ in range(len(self.__questions)):
+                progress = s.decode_progress(player_socket.recv(2048))
+                logger.info("Receive %s from %s", progress, player_name)
+                with self.__playerStateLock:
+                    logger.debug("Acquired the player state lock")
+                    self.__playerState[player_name] = progress
 
-                #     dict(sorted(player_state_list,
-                #          key=lambda item: item[1][0], reverse=True))
-                #     new_top5players = list(
-                #         map(lambda x: x[0], player_state_list[:5]))
-                #     logger.debug("new_top5players: %s", new_top5players)
-                # logger.debug("Released the player state lock")
+                    player_state_list = self.__playerState.items()
+                    logger.debug("player_state_list: %s", player_state_list)
 
-                #     with self.__top5playersLock:
-                #         if new_top5players != self.__top5players:
-                #             self.__top5players = new_top5players
-                #             encoded = s.encode_leadersboard(self.__top5players)
-                #             self.broadcast(self.__top5players, encoded)
+                    dict(sorted(player_state_list,
+                         key=lambda item: item[1][0], reverse=True))
+                    new_top5players = list(
+                        map(lambda x: x[0], player_state_list[:5]))
+                    logger.debug("new_top5players: %s", new_top5players)
+                logger.debug("Released the player state lock")
+
+                with self.__top5playersLock:
+                    if new_top5players != self.__top5players:
+                        self.__top5players = new_top5players
+                        encoded = s.encode_leadersboard(self.__top5players)
+                        self.broadcast(self.__top5players, encoded)
 
             # while True:
             #     pass
@@ -244,5 +246,5 @@ class Server:
 
 if __name__ == "__main__":
     IP = socket.gethostbyname(socket.gethostname())
-    PORT = 5559
+    PORT = 6000
     Server(IP, PORT).start()
