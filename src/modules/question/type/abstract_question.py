@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from pygame import Surface
+from pygame import Surface, Rect
 from ...solution import AbstractSolution
 
 
@@ -16,7 +16,7 @@ class AbstractQuestion(ABC):
         '''
 
     @abstractmethod
-    def draw(self, screen: Surface):
+    def draw(self, screen: Surface) -> Rect:
         '''
         Given a pygame instance, represent the question on the canvas.
         '''
