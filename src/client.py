@@ -38,6 +38,8 @@ class Client:
                 self.state.game_starts.acquire()
 
     def player_listener(self):
+        logger.info("Runing listener")
+
         self.network_barrier.acquire()
 
         logger.info(
@@ -51,12 +53,13 @@ class Client:
         logger.info("Received game starts signal from server.")
 
         while True:
-            leadersboard = self.network.receive_leadersboard()
-            self.state.set_leadersboard(leadersboard)
-            logger.info("Leader's board updated: %s",
-                        self.state.get_leadersboard())
+            pass
+            # leadersboard = self.network.receive_leadersboard()
+            # self.state.set_leadersboard(leadersboard)
+            # logger.info("Leader's board updated: %s",
+            #             self.state.get_leadersboard())
 
-            # gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        # gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
         # gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
         # while gameContinue:
         #     leadersboard = self.network.receive_leadersboard()

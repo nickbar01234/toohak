@@ -41,19 +41,14 @@ class PlayerState:
         self.__name = name
 
     def get_questions(self):
-        with self.__questions_lock:
-            while len(self.__questions) == 0:
-                self.__questions_condition.wait()
-            return self.__questions
+        return self.__questions
 
     def set_questions(self, questions: list[AbstractQuestion]):
         if not isinstance(questions, list):
             raise RuntimeError(
                 f"Expect name to be of type list, but received type {type(questions)}")
 
-        with self.__questions_lock:
-            self.__questions = questions
-            self.__questions_condition.notify()
+        self.__questions = questions
 
     def get_progress(self):
         return self.__progress
