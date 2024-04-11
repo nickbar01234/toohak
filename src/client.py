@@ -50,21 +50,14 @@ class Client:
         self.state.game_starts.release()
         logger.info("Received game starts signal from server.")
 
-        while True:
-            pass
-            # leadersboard = self.network.receive_leadersboard()
-            # self.state.set_leadersboard(leadersboard)
-            # logger.info("Leader's board updated: %s",
-            #             self.state.get_leadersboard())
+        gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        while gameContinue:
+            self.state.set_leadersboard(leadersboard)
+            logger.info(
+                "Leader's board updated: {%s}", self.state.get_leadersboard())
+            gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
 
-        # gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        # gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        # while gameContinue:
-        #     leadersboard = self.network.receive_leadersboard()
-        #     self.state.set_leadersboard(leadersboard)
-        #     logger.info(f"Leader's board updated: {self.state.get_leadersboard}")
-        #     gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        # logger.info(f"Received update from server: Game ends")
+        logger.info("Received update from server: Game ends")
 
         # TODO: wait for and receive Final rank before exiting
 

@@ -75,7 +75,7 @@ class PlayerState:
 
     def get_leadersboard(self):
         with self.__leadersboardLock:
-            return self.__leadersboard
+            return list(self.__leadersboard)
 
     def set_leadersboard(self, leadersboard):
         with self.__leadersboardLock:

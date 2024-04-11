@@ -50,8 +50,6 @@ class Server:
         self.broadcast("distribute questions", s.encode_questions(
             self.__state.get_questions()))
 
-        time.sleep(1)  # TODO: temporary fix
-
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
         self.broadcast("game starts", s.encode_startgame())
 

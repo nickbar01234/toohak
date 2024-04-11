@@ -23,8 +23,6 @@ class QuestionScene(AbstractScene):
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
         self.submit_box = self.__create_submit_box()
-        self.leaderboard = [("Nicky", 1), ("Stephanie", 2),
-                            ("Tony", 3), ("Chen", 4), ("Liu", 5)]
 
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
@@ -52,7 +50,7 @@ class QuestionScene(AbstractScene):
 
             self.get_screen().fill("white")
             question_rect = self.curr_question.draw(self.get_screen())
-            for idx, (name, n_questions) in enumerate(self.leaderboard):
+            for idx, (name, n_questions) in enumerate(self.get_player_state().get_leadersboard()):
                 text = STYLE["font"]["text"].render(
                     f"{name}: {n_questions}", True, (0, 0, 0))
                 text_rect = text.get_rect()
