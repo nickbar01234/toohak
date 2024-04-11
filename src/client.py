@@ -42,9 +42,7 @@ class Client:
 
         self.network_barrier.acquire()
 
-        logger.info(
-            "Listener thread started - waits for updates from server for leader's board / terminate sig.")
-
+        logger.info("Waiting for questions")
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
 

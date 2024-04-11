@@ -37,7 +37,6 @@ def decode(data: bytes, action: str):
     decoded = pickle.loads(data)
     match decoded:
         case {'action': action2, 'msg': msg} if action2 == action:
-            logger.debug("Decoding msg: " + str(msg))
             return msg
         case msg:
             logger.error(

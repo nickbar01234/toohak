@@ -1,9 +1,13 @@
-import logging
-from ..serializable import serializer as s
-from ..question.type.abstract_question import AbstractQuestion
 from datetime import datetime
 import threading
 from enum import Enum, auto
+import logging
+from ..serializable import serializer as s
+from ..question.type.abstract_question import AbstractQuestion
+from .server_state import ServerState
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 
 class GameState(Enum):
@@ -14,6 +18,7 @@ class GameState(Enum):
 
 class PlayerState:
     def __init__(self, network):
+
         # TODO - Change type hint for network
         self.__network = network
         self.__name = None
@@ -49,6 +54,7 @@ class PlayerState:
                 f"Expect name to be of type list, but received type {type(questions)}")
 
         self.__questions = questions
+        logger.info("Received questions and updated the local question bank.")
 
     def get_progress(self):
         return self.__progress
