@@ -1,2 +1,5 @@
 .venv
 __pycache__
+src/test.py 
+toohak-env/
+src/demo.py

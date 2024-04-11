@@ -2,7 +2,11 @@ from typing import Literal, TypedDict
 import os
 import pygame
 
-BASE = os.path.join(os.path.abspath(os.getcwd()), "src", "static", "font")
+current_dir = os.path.basename(os.getcwd())
+if current_dir == "src":
+    BASE = os.path.join(os.path.abspath(os.getcwd()), "static", "font")
+else:
+    BASE = os.path.join(os.path.abspath(os.getcwd()), "src", "static", "font")
 
 # pylint: disable=E1101
 pygame.init()

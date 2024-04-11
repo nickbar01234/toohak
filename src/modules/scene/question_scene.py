@@ -7,32 +7,15 @@ from .styles import STYLE
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 
+import logging
+logger = logging.getLogger()
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+
 
 class QuestionScene(AbstractScene):
-    def __init__(self, screen, player_state, network):
-        super().__init__(screen, player_state, network)
-        # TODO: refactor this later
-        player_state.set_questions([
-            MultipleChoiceQuestionBuilder()
-            .add_question("What's Tony's last name")
-            .add_option("Doan")
-            .add_option("Xu")
-            .add_option("Huang")
-            .add_option("Sheldon")
-            .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
-            .build(),
-            MultipleChoiceQuestionBuilder()
-            .add_question("What day is it")
-            .add_option("Mon")
-            .add_option("Tue")
-            .add_option("Wed")
-            .add_solution(MultipleChoiceSolutionBuilder().add_solution("Mon").build())
-            .build()
-        ])
-
-        self.__player_state = player_state
-        # TODO: underscore before variable names?
-        # TODO: is it good practice to have so many fields?
+    # TODO: add the network choice for updating the player's progress (question scene) to the server after merge
+    def start_scene(self):
+        # Now initialize the questions when starting the scene
         self.q_idx = 0
         self.num_questions = len(self.get_player_state().get_questions())
         self.curr_question = self.get_player_state().get_questions()[0]
@@ -41,17 +24,13 @@ class QuestionScene(AbstractScene):
         self.boxes, self.box_borders = self.__create_options_boxes()
         self.submit_box = self.__create_submit_box()
 
-    def start_scene(self):
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
 
         while True:
             for event in pg.event.get():
+                self.handle_quit(event)
                 match event.type:
-                    case pg.QUIT:
-                        pg.quit()
-                        sys.exit(0)
-
                     case pg.MOUSEBUTTONDOWN:
                         if self.submit_box.collidepoint(event.pos):
                             # note: a janky way of detecting all questions have been answered (we can definitely change this later)
@@ -70,7 +49,15 @@ class QuestionScene(AbstractScene):
                                     self.selected.add(option)
 
             self.get_screen().fill("white")
-            self.curr_question.draw(self.get_screen())
+            question_rect = self.curr_question.draw(self.get_screen())
+            for idx, (name, n_questions) in enumerate(self.get_player_state().get_leadersboard()):
+                text = STYLE["font"]["text"].render(
+                    f"{name}: {n_questions}", True, (0, 0, 0))
+                text_rect = text.get_rect()
+                text_rect.midtop = question_rect.midbottom
+                text_rect.top = question_rect.bottom
+                text_rect = text_rect.move(0, question_rect.height + idx * 32)
+                self.get_screen().blit(text, text_rect)
 
             # draw submit box
             pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)
@@ -91,6 +78,12 @@ class QuestionScene(AbstractScene):
         print(f"Your solution is {self.selected}")
         correctness = self.curr_question.verify(user_solution)
         self.__draw_correctness(correctness)
+        self.get_player_state().set_progress(correctness)
+
+        # send update to the server
+        print("sending progress to server")
+        self.get_network().update_progress(self.get_player_state().get_progress())
+        print("sent to server")
 
         # update scene states
         self.q_idx += 1
@@ -102,8 +95,6 @@ class QuestionScene(AbstractScene):
         self.curr_options = self.curr_question.get_options()
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
-        self.__player_state.set_progress(correctness)
-        # TODO: send udpated progress to server
 
         return True
 
@@ -144,8 +135,8 @@ class QuestionScene(AbstractScene):
 
         # spacing between edge of screen and border of options zone that holds all options
         container = pg.Rect(0, 0, STYLE["width"] * 0.9, STYLE["height"] * 0.6)
-        container.center = self.get_screen().get_rect().center
-        container.bottom = self.get_screen().get_rect().bottom
+        container.top = self.get_screen().get_rect().centery
+        container.centerx = self.get_screen().get_rect().centerx
 
         margin_x, margin_y = 16, 32
         width, height = container.width // 2, 100

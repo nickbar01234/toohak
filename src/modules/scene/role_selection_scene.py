@@ -1,4 +1,3 @@
-import sys
 import pygame
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
@@ -16,9 +15,7 @@ class RoleSelectionScene(AbstractScene):
         while True:
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit(0)
+                self.handle_quit(event)
 
                 if referee_box[0].collidepoint(pygame.mouse.get_pos()):
                     referee_box_highlight = True
