@@ -23,13 +23,11 @@ class PlayerState:
         self.__network = network
         self.__name = None
 
-        self.__questions_lock = threading.Lock()
-        self.__questions_condition = threading.Condition(self.__questions_lock)
         self.__questions = []
         self.__progress: list[bool] = []
         self.__init_time = None
         self.__leadersboard = []
-        self.__leadersboardLock = threading.Lock()
+        self.__leadersboard_lock = threading.Lock()
 
         self.__game_state = GameState.START
         self.game_starts = threading.Semaphore(0)
@@ -74,11 +72,11 @@ class PlayerState:
         self.__init_time = datetime.now()
 
     def get_leadersboard(self):
-        with self.__leadersboardLock:
+        with self.__leadersboard_lock:
             return list(self.__leadersboard)
 
     def set_leadersboard(self, leadersboard):
-        with self.__leadersboardLock:
+        with self.__leadersboard_lock:
             self.__leadersboard = leadersboard
 
     def game_ends(self):

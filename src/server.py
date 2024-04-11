@@ -1,10 +1,7 @@
 import logging
 import socket
 import threading
-import time
 from modules import serializer as s
-from modules.question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
-from modules.solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 from modules import ServerState
 
 logger = logging.getLogger()

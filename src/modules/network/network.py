@@ -23,8 +23,6 @@ class Network:
         logger.info("Connecting to %s", ip)
         host, port = ip.split(":")
         self.client.connect((host, int(port)))
-
-        # may raise InvalidMessage / timeout exception
         s.decode_connect_response(self.client.recv(2048))
         logger.info("Connection established.")
 
@@ -33,15 +31,12 @@ class Network:
 
     def send_name(self, name):
         self.client.sendall(s.encode_name(name))
-        # may raise InvalidMessage / timeout exception
         s.decode_name_response(self.client.recv(2048))
         logger.info("Player's name is updated on the server.")
 
     def receive_questions(self):
-        # may raise InvalidMessage exception
-        data = self.client.recv(100_000_000)
-        logger.info("Received %s", pickle.loads(data))
-        questions = s.decode_questions(data)
+        questions = s.decode_questions(self.client.recv(100_000_000))
+        logger.info("Received questions from the server: %s", questions)
         return questions
 
     def update_progress(self, progress: Progress):

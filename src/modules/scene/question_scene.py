@@ -137,7 +137,6 @@ class QuestionScene(AbstractScene):
         container = pg.Rect(0, 0, STYLE["width"] * 0.9, STYLE["height"] * 0.6)
         container.top = self.get_screen().get_rect().centery
         container.centerx = self.get_screen().get_rect().centerx
-        # container.bottom = self.get_screen().get_rect().bottom
 
         margin_x, margin_y = 16, 32
         width, height = container.width // 2, 100

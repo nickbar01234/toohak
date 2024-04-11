@@ -1,4 +1,3 @@
-import sys
 import pygame
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
@@ -7,9 +6,6 @@ from . import utils
 
 
 class RoleSelectionScene(AbstractScene):
-    def get_scene(self):
-        return SceneState.ROLE_SELECTION
-
     def start_scene(self):
         referee_box = self.__create_role_choice(0)
         player_box = self.__create_role_choice(100)
