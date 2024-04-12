@@ -56,14 +56,16 @@ class Server:
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
 
-    def listener(self, client: socket.socket, addr):
+    def listener(self, client: socket.socket, addr: str):
         logger.info("Listening from %s", addr)
         # TODO(nickbar01234) - Handle referee or player
         self.player_listener(client, addr)
 
     # For each listener's thread to receive message form a specific player
 
-    def player_listener(self, player_socket: socket.socket, player_addr):
+    # TODO: change this to a general purpose listener?
+    # TODO: client needs to send a message to inform server whether if it's player/referee
+    def player_listener(self, player_socket: socket.socket, player_addr: str):
         socket_addr = (player_socket, player_addr)
         player_lock = threading.Lock()
         try:

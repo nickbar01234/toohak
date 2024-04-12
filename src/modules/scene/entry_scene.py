@@ -1,5 +1,3 @@
-import threading
-import random
 import pygame
 import pyperclip
 from .abstract_scene import AbstractScene
