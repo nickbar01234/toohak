@@ -38,7 +38,7 @@ class Client:
         listener_thread.start()
 
         while True:
-            logger.info(f"On scene {scene}")
+            logger.info("On scene %s", scene)
             scene = SCENES[scene].start_scene()
 
             if scene == SceneState.PLAYER_QUESTION:

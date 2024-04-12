@@ -1,7 +1,6 @@
 import threading
 import socket
 import logging
-import pickle
 from ..serializable import serializer as s
 
 logger = logging.getLogger(__name__)
