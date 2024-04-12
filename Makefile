@@ -1,5 +1,5 @@
 VENV=.venv
-PYTHON=$(VENV)/bin/python
+PYTHON=$(VENV)/bin/python3.12
 SRC=src
 
 .PHONY: clean install test
@@ -9,10 +9,10 @@ install: requirements.txt
 	$(PYTHON) -m pip install -r requirements.txt
 
 client: install
-	.venv/bin/python3 src/client.py
+	.venv/bin/python3.12 src/client.py
 
 server: install
-	.venv/bin/python3 src/server.py
+	.venv/bin/python3.12 src/server.py
 
 test:
 	cd $(SRC) && python3 -m unittest		
