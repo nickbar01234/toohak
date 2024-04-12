@@ -50,7 +50,8 @@ class Server:
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
         init_top5players = [(n, 0)
                             for n in self.__state.get_all_player_names()[:5]]
-        self.broadcast_with_ack("game starts", s.encode_startgame(init_top5players))
+        self.broadcast_with_ack(
+            "game starts", s.encode_startgame(init_top5players))
 
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
@@ -91,7 +92,8 @@ class Server:
                 logger.info("Receive %s from %s", progress, player_name)
                 self.__state.update_player_progress(socket_addr, progress)
                 if (top5 := self.__state.update_top5()):
-                    self.broadcast_without_ack("new top5", s.encode_leadersboard(top5))
+                    self.broadcast_without_ack(
+                        "new top5", s.encode_leadersboard(top5))
 
             # # Players have finished all the questions
             # logger.info(
@@ -135,7 +137,7 @@ class Server:
                 # TODO: but we should try to mae it more concurrent
                 # TODO: Try to move the broacasting questions and game start to each player thread? use barriers??
 
-    # 
+    #
     # Broadcast messages to players when there's no need to hear back from players.
     #
     def broadcast_without_ack(self, summary, encoded_message):
