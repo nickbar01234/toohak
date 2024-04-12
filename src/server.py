@@ -11,6 +11,7 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 class Server:
     def __init__(self, ip, port):
         self.__state = ServerState(ip, port)
+        self.__socket_lock = threading.Lock()
 
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,9 +66,12 @@ class Server:
 
             # finalize establishing connection by receiving player's name
             # may raise InvalidMessage exception
-            player_socket.sendall(s.encode_connect_success())
+            with self.__socket_lock:
+                player_socket.sendall(s.encode_connect_success())
+
             player_name = s.decode_name(player_socket.recv(2048))
-            player_socket.sendall(s.encode_name_response())
+            with self.__socket_lock:
+                player_socket.sendall(s.encode_name_response())
 
             self.__state.add_player(player_socket, player_addr, player_name)
 
@@ -113,12 +117,14 @@ class Server:
     def broadcast(self, summary, encoded_message):
         player_sockets = self.__state.get_all_player_sockets()
         for name, player_socket in player_sockets:
-            player_socket.sendall(encoded_message)
-            logger.info(
-                "Broadcasted {%s} to Player {%s}", summary, name)
+            with self.__socket_lock:
+                player_socket.sendall(encoded_message)
+                logger.info(
+                    "Broadcasted {%s} to Player {%s}", summary, name)
 
 
 if __name__ == "__main__":
-    IP = socket.gethostbyname(socket.gethostname())
-    PORT = 5555
+    # IP = socket.gethostbyname(socket.gethostname())
+    IP = "10.243.16.122"
+    PORT = 5557
     Server(IP, PORT).start()

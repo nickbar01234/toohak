@@ -26,7 +26,7 @@ class NameScene(AbstractScene):
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        # TODO(nickbar01234) - Send to server
+                        self.get_network().send_name(name)
                         return SceneState.PLAYER_QUESTION
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         name = pyperclip.paste()
