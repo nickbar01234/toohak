@@ -121,12 +121,15 @@ class Server:
         for name, player_socket, lock in player_sockets:
             with lock:
                 player_socket.sendall(encoded_message)
+        for _, player_socket, lock in player_sockets:
+            with lock:
+                _ack = s.decode_ack(player_socket.recv(1024))  # Receiving ack
                 logger.info(
                     "Broadcasted {%s} to Player {%s}", summary, name)
-                _ack = s.decode_ack(player_socket.recv(1024))  # Receiving ack
 
 
 if __name__ == "__main__":
-    IP = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
+    hostname = socket.gethostname()
+    IP = socket.gethostbyname_ex(hostname)[-1][-1]
     PORT = 5555
     Server(IP, PORT).start()

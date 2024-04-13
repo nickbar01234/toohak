@@ -49,15 +49,13 @@ class Client:
         self.state.set_questions(questions)
         self.network.block_until_game_starts()
         self.state.game_starts.release()
-        # logger.info(
-        #     "Releasing the lock associated with game_starts to allow main thread proceed to next scene.")
 
-        gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        while gameContinue:
+        game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        while game_continues:
             self.state.set_leadersboard(leadersboard)
             logger.info(
                 "Leader's board updated: {%s}", self.state.get_leadersboard())
-            gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
+            game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
 
         logger.info("Received update from server: Game ends")
 
