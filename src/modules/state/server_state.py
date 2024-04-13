@@ -88,11 +88,11 @@ class ServerState:
         logger.info("Removed connection from %s", socket_addr)
 
     def player_wait_start_game(self, socket_addr):
-        lock = None
+        player = None
         with self.__player_states_lock:
-            lock = self.__player_states.get(socket_addr, None)
-        if lock is not None:
-            lock[-1].acquire()
+            player = self.__player_states.get(socket_addr, None)
+        if player is not None:
+            player[-1].acquire()
 
     def player_signal_start_game(self, socket_addr):
         with self.__player_states_lock:

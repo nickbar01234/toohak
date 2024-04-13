@@ -60,6 +60,7 @@ class Client:
                 "Leader's board updated: {%s}", self.state.get_leadersboard())
             game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
 
+        self.network.block_until_game_ends()
         logger.info("Received update from server: Game ends")
 
         # TODO: wait for and receive Final rank before exiting

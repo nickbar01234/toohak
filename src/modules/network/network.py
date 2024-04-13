@@ -64,3 +64,10 @@ class Network:
         logger.debug("Received game start signal.")
         self.client.sendall(s.encode_ack())
         return initial_leadersboard
+
+    def block_until_game_ends(self):
+        self.client.setblocking(True)
+        logger.debug(
+            "Blocking until received gameends signal from the server.")
+        s.decode_endgame(self.client.recv(2048))
+        logger.debug("Received game ends signal.")
