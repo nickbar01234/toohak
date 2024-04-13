@@ -38,7 +38,7 @@ class Network:
         self.client.setblocking(True)
         questions = s.decode_questions(self.client.recv(100_000_000))
         logger.info("Received questions from the server: %s", str(questions))
-        self.client.sendall(s.encode_ack())
+        self.client.sendall(s.encode_ack("questions"))
         return questions
 
     def update_progress(self, progress: Progress):
@@ -48,12 +48,12 @@ class Network:
     def receive_leadersboard(self):
         leadersboard = s.decode_leadersboard(self.client.recv(2048))
         logger.debug("Received leader's board from server: %s", leadersboard)
-        self.client.sendall(s.encode_ack())
+        self.client.sendall(s.encode_ack("leadersboard"))
         return leadersboard
 
     def receive_leadersboard_or_game_ends(self):
         data = self.client.recv(2048)
-        self.client.sendall(s.encode_ack())
+        self.client.sendall(s.encode_ack("leadersboard or game ends"))
         return s.decode_update_or_endgame(data)
 
     def block_until_game_starts(self):
@@ -62,5 +62,5 @@ class Network:
             "Blocking until received gamestart signal from the server.")
         initial_leadersboard = s.decode_startgame(self.client.recv(2048))
         logger.debug("Received game start signal.")
-        self.client.sendall(s.encode_ack())
+        self.client.sendall(s.encode_ack("game starts"))
         return initial_leadersboard

@@ -122,7 +122,7 @@ class Server:
         for name, player_socket, lock in player_sockets:
             with lock:
                 player_socket.sendall(encoded_message)
-        for _, player_socket, lock in player_sockets:
+        for name, player_socket, lock in player_sockets:
             with lock:
                 _ack = s.decode_ack(player_socket.recv(1024))  # Receiving ack
                 logger.info(

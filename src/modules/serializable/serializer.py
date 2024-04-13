@@ -90,8 +90,8 @@ def decode_questions(data: bytes):
     return decode(data, QUESTIONS)
 
 
-def encode_ack():
-    return encode(ACK, SUCCESS)
+def encode_ack(for_action: str):
+    return encode(ACK, for_action)
 
 
 def decode_ack(data: bytes):
