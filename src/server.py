@@ -48,7 +48,8 @@ class Server:
             self.__state.get_questions()))
 
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
-        init_top5players = [(n,0) for n in self.__state.get_all_player_names()[:5]]
+        init_top5players = [(n, 0)
+                            for n in self.__state.get_all_player_names()[:5]]
         self.broadcast("game starts", s.encode_startgame(init_top5players))
 
         for address in self.__state.get_all_socket_addr():
@@ -122,13 +123,12 @@ class Server:
         for name, player_socket, lock in player_sockets:
             with lock:
                 player_socket.sendall(encoded_message)
-        for name, player_socket, lock in player_sockets:
-            with lock:
                 _ack = s.decode_ack(player_socket.recv(1024))  # Receiving ack
                 logger.info(
                     "Broadcasted {%s} to Player {%s}", summary, name)
-
-# TODO: Try to move the broacasting questions and game start to each player thread? use barriers??
+                # TODO: keep it safe in one lock -> otherwise the player_listnere might grab the lock and message won't be recognized
+                # TODO: but we should try to mae it more concurrent
+                # TODO: Try to move the broacasting questions and game start to each player thread? use barriers??
 
 
 if __name__ == "__main__":
