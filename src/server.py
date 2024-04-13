@@ -124,8 +124,8 @@ class Server:
 
 
 if __name__ == "__main__":
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.connect(("8.8.8.8", 80))
-    IP = server_socket.getsockname()[0]
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    IP = s.getsockname()[0]
     PORT = 5555
     Server(IP, PORT).start()
