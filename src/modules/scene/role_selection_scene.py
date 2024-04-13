@@ -1,6 +1,6 @@
 import pygame
 from .abstract_scene import AbstractScene
-from .scene_state import SceneState
+from .scene_state import SceneState, PLAYER_MODE, REFEREE_MODE
 from .styles import STYLE
 from . import utils
 
@@ -28,11 +28,17 @@ class RoleSelectionScene(AbstractScene):
                     player_box_highlight = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN and referee_box[0].collidepoint(event.pos):
-                    # TODO(nickbar01234) - Handle sending information
+                    # inform server of client type
+                    print("Client selected Player mode, informing server")
+                    self.get_network().send_mode(PLAYER_MODE)
+                    print("Sent to server")
                     return SceneState.REFEREE_ADD_QUESTION
 
                 if event.type == pygame.MOUSEBUTTONDOWN and player_box[0].collidepoint(event.pos):
-                    # TODO(nickbar01234) - Handle sending information
+                    # inform server of client type
+                    print("Client selected Referee mode, informing server")
+                    self.get_network().send_mode(REFEREE_MODE)
+                    print("Sent to server")
                     return SceneState.PLAYER_NAME
 
             self.get_screen().fill("white")

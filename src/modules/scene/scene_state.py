@@ -19,3 +19,6 @@ class SceneState(Enum):
 
 FINISHED_ROLE_SELECTION = (SceneState.PLAYER_NAME,
                            SceneState.REFEREE_ADD_QUESTION)
+
+PLAYER_MODE = True
+REFEREE_MODE = False

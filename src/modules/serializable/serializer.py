@@ -13,6 +13,7 @@ Message format:
     }
 '''
 CONNECT = 'connect'
+MODE = 'mode'
 NAME = 'name'
 SUCCESS = 'success'
 START = 'start'
@@ -45,16 +46,24 @@ def decode(data: bytes, action: str):
             raise InvalidMessageError
 
 
+def decode_response(data: bytes, action: str) -> bool:
+    return decode(data, action) == SUCCESS
+
 #
 # Message Protocol for establishing connection
 #
+
 
 def encode_connect_success():
     return encode(CONNECT, SUCCESS)
 
 
-def encode_name_response():
-    return encode(NAME, SUCCESS)
+def decode_connect_response(data: bytes) -> bool:
+    return decode_response(data, CONNECT)
+
+#
+# Message Protocol for sending name
+#
 
 
 def encode_name(name: str):
@@ -65,17 +74,32 @@ def decode_name(data: bytes) -> str:
     return decode(data, NAME)
 
 
-def decode_response(data: bytes, action: str) -> bool:
-    return decode(data, action) == SUCCESS
-
-
-def decode_connect_response(data: bytes) -> bool:
-    return decode_response(data, CONNECT)
+def encode_name_response():
+    return encode(NAME, SUCCESS)
 
 
 def decode_name_response(data: bytes) -> bool:
     return decode_response(data, NAME)
 
+#
+# Message Protocol for sending client mode (player/referee)
+#
+
+
+def encode_mode(mode: bool):
+    return encode(MODE, mode)
+
+
+def decode_mode(data: bytes) -> bool:
+    return decode_response(data, MODE)
+
+
+def encode_mode_response():
+    return encode(MODE, SUCCESS)
+
+
+def decode_mode_response(data: bytes) -> bool:
+    return decode_response(data, MODE)
 
 #
 # Message Protocol for distributing questions
