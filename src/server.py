@@ -108,8 +108,7 @@ class Server:
             information = self.__state.get_socket_addr(socket_addr)
             logger.error("Lost the connection with %s", information)
         finally:
-            information = self.__state.get_socket_addr(socket_addr)
-            logger.info("Disconnecting %s", information)
+            logger.info("Disconnecting %s", socket_addr)
             self.__state.remove_player(socket_addr)
             player_socket.close()
 
