@@ -60,6 +60,7 @@ class Network:
         self.client.setblocking(True)
         logger.debug(
             "Blocking until received gamestart signal from the server.")
-        s.decode_startgame(self.client.recv(2048))
+        initial_leadersboard = s.decode_startgame(self.client.recv(2048))
         logger.debug("Received game start signal.")
         self.client.sendall(s.encode_ack())
+        return initial_leadersboard

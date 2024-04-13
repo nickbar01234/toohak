@@ -71,13 +71,14 @@ class PlayerState:
     def set_init_time(self):
         self.__init_time = datetime.now()
 
-    def get_leadersboard(self):
+    def get_leadersboard(self) -> list[tuple[str, int]]:
         with self.__leadersboard_lock:
             return list(self.__leadersboard)
 
-    def set_leadersboard(self, leadersboard):
+    def set_leadersboard(self, leadersboard: list[tuple[str, int]]):
         with self.__leadersboard_lock:
             self.__leadersboard = leadersboard
+            logger.debug("Set leadersboard: %s", self.__leadersboard)
 
     def game_ends(self):
         return self.__game_state == GameState.END

@@ -124,6 +124,13 @@ class ServerState:
                 return new_top5
             return None
 
+    def get_all_player_names(self) -> list[Name]:
+        with self.__player_states_lock:
+            players = [n for (n, _, _, _) in list(
+                self.__player_states.values())]
+            logger.debug("Get all players: %s", players)
+            return players
+
     def get_all_player_sockets_with_locks(self) -> list[tuple[Name, Socket, Lock]]:
         with self.__player_states_lock:
             player_sockets = [(n, s, l) for (s, _), (n, _, l, _)

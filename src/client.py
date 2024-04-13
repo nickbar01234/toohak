@@ -47,7 +47,10 @@ class Client:
         logger.info("Waiting for questions")
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
-        self.network.block_until_game_starts()
+        logger.info("Received questions.")
+
+        init_leadersboard = self.network.block_until_game_starts()
+        self.state.set_leadersboard(init_leadersboard)
         self.state.game_starts.release()
 
         game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
