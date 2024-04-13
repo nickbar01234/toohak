@@ -35,6 +35,7 @@ class Network:
         logger.info("Player's name is updated on the server.")
 
     def receive_questions(self):
+        self.client.setblocking(True)
         questions = s.decode_questions(self.client.recv(100_000_000))
         logger.info("Received questions from the server: %s", questions)
         return questions
@@ -53,4 +54,7 @@ class Network:
 
     def block_until_game_starts(self):
         self.client.setblocking(True)
+        logger.debug(
+            "Blocking until received gamestart signal from the server.")
         s.decode_startgame(self.client.recv(2048))
+        logger.debug("Received game start signal.")

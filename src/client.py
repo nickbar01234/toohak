@@ -48,7 +48,8 @@ class Client:
 
         self.network.block_until_game_starts()
         self.state.game_starts.release()
-        logger.info("Received game starts signal from server.")
+        logger.info(
+            "Releasing the lock associated with game_starts to allow main thread proceed to next scene.")
 
         gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
         while gameContinue:
