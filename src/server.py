@@ -50,6 +50,9 @@ class Server:
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
         self.broadcast("game starts", s.encode_startgame())
 
+        for address in self.__state.get_all_socket_addr():
+            self.__state.player_signal_start_game(address)
+
     def listener(self, client: socket.socket, addr):
         logger.info("Listening from %s", addr)
         # TODO(nickbar01234) - Handle referee or player
@@ -77,12 +80,11 @@ class Server:
                 player_socket, player_addr, player_name, player_lock)
 
             # Wait for game starts TODO: does the listender thread need to block until game starts? maybe not?
-            # self.__state.gameStarts.acquire()
+            self.__state.player_wait_start_game(socket_addr)
+
             for _ in range(len(self.__state.get_questions())):
                 logger.debug(
                     "Waiting to receive update from the player %s", player_name)
-
-                player_socket.setblocking(True)
                 progress = s.decode_progress(player_socket.recv(2048))
                 logger.info("Receive %s from %s", progress, player_name)
                 self.__state.update_player_progress(socket_addr, progress)
@@ -104,7 +106,8 @@ class Server:
             # s.decode_leave(player_socket.recv(1024))
             # logger.info(
             #     f"Player {player_name, player_addr} left. Listener threading exiting..")
-        except Exception as _:
+        except Exception as e:
+            print(e)
             information = self.__state.get_socket_addr(socket_addr)
             logger.error("Lost the connection with %s", information)
         finally:
@@ -120,6 +123,7 @@ class Server:
                 player_socket.sendall(encoded_message)
                 logger.info(
                     "Broadcasted {%s} to Player {%s}", summary, name)
+                _ack = s.decode_ack(player_socket.recv(1024))  # Receiving ack
 
 
 if __name__ == "__main__":

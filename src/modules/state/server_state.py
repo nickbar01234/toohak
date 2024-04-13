@@ -1,3 +1,4 @@
+import pickle
 import logging
 import socket
 import threading
@@ -32,7 +33,8 @@ Addr = str
 Socket = socket.socket
 Lock = threading.Lock
 PlayerProgress = list[bool]
-PlayerStates = dict[tuple[Socket, Addr], tuple[Name, PlayerProgress, Lock]]
+PlayerStates = dict[tuple[Socket, Addr],
+                    tuple[Name, PlayerProgress, Lock, Lock]]
 
 
 class ServerState:
@@ -67,7 +69,8 @@ class ServerState:
         logger.debug("Adding player {%s, %s, %s}", pname, psocket, paddr)
 
         with self.__player_states_lock:
-            self.__player_states[(psocket, paddr)] = (pname, [], plock)
+            self.__player_states[(psocket, paddr)] = (
+                pname, [], plock, threading.Semaphore(0))
 
             # Hardcoding for now: start the game when 2 players joined
             # TODO: move this to where it's appropriate (referee should start the game instead)
@@ -85,22 +88,34 @@ class ServerState:
                 del self.__player_states[socket_addr]
         logger.info("Removed connection from %s", socket_addr)
 
+    def player_wait_start_game(self, socket_addr):
+        lock = None
+        with self.__player_states_lock:
+            lock = self.__player_states.get(socket_addr, None)
+        if lock is not None:
+            lock[-1].acquire()
+
+    def player_signal_start_game(self, socket_addr):
+        with self.__player_states_lock:
+            if socket_addr in self.__player_states:
+                self.__player_states[socket_addr][-1].release()
+
     def num_players(self):
         with self.__player_states_lock:
             return len(self.__player_states)
 
     def update_player_progress(self, socket_addr, new_progress):
         with self.__player_states_lock:
-            name, _, lock = self.__player_states[socket_addr]
-            self.__player_states[socket_addr] = name, new_progress, lock
+            name, _, lock, game_start_lock = self.__player_states[socket_addr]
+            self.__player_states[socket_addr] = name, new_progress, lock, game_start_lock
             logger.info(
                 "Player {%s} progress has been updated: %s", name, new_progress)
 
     # Return the updated top5players if there's a non-trivial update, otherwise return None
     def update_top5(self):
         with self.__player_states_lock:
-            name_progress_list = [(n, len(p), l)
-                                  for n, p, l in list(self.__player_states.values())]
+            name_progress_list = [(n, len(p))
+                                  for n, p, l, _ in list(self.__player_states.values())]
             new_top5 = sorted(name_progress_list,
                               key=lambda x: x[1], reverse=True)[:5]
             logger.debug("The new top5 players are %s", new_top5)
@@ -112,7 +127,7 @@ class ServerState:
 
     def get_all_player_sockets_with_locks(self) -> list[tuple[Name, Socket, Lock]]:
         with self.__player_states_lock:
-            player_sockets = [(n, s, l) for (s, _), (n, _, l)
+            player_sockets = [(n, s, l) for (s, _), (n, _, l, _)
                               in list(self.__player_states.items())]
             logger.debug("Get all %d player sockets", len(player_sockets))
             return player_sockets
