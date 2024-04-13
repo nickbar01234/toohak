@@ -11,7 +11,6 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 class Server:
     def __init__(self, ip, port):
         self.__state = ServerState(ip, port)
-        self.__socket_lock = threading.Lock()
 
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,20 +59,22 @@ class Server:
 
     def player_listener(self, player_socket: socket.socket, player_addr):
         socket_addr = (player_socket, player_addr)
+        player_lock = threading.Lock()
         try:
             logger.info(
                 "Listener thread started to listen from %s", player_addr)
 
             # finalize establishing connection by receiving player's name
             # may raise InvalidMessage exception
-            with self.__socket_lock:
+            with player_lock:
                 player_socket.sendall(s.encode_connect_success())
 
             player_name = s.decode_name(player_socket.recv(2048))
-            with self.__socket_lock:
+            with player_lock:
                 player_socket.sendall(s.encode_name_response())
 
-            self.__state.add_player(player_socket, player_addr, player_name)
+            self.__state.add_player(
+                player_socket, player_addr, player_name, player_lock)
 
             # Wait for game starts TODO: does the listender thread need to block until game starts? maybe not?
             # self.__state.gameStarts.acquire()
@@ -114,9 +115,9 @@ class Server:
 
     # Message protocol for the server to broadcast updates to players and referee
     def broadcast(self, summary, encoded_message):
-        player_sockets = self.__state.get_all_player_sockets()
-        for name, player_socket in player_sockets:
-            with self.__socket_lock:
+        player_sockets = self.__state.get_all_player_sockets_with_locks()
+        for name, player_socket, lock in player_sockets:
+            with lock:
                 player_socket.sendall(encoded_message)
                 logger.info(
                     "Broadcasted {%s} to Player {%s}", summary, name)

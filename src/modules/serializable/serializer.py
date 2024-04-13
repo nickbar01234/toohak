@@ -100,7 +100,6 @@ def encode_startgame():
 
 
 def decode_startgame(data: bytes):
-    logger.debug("Decoding data to hopefully get startgame: %s", data)
     return decode(data, START)
 
 

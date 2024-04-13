@@ -37,7 +37,7 @@ class Network:
     def receive_questions(self):
         self.client.setblocking(True)
         questions = s.decode_questions(self.client.recv(100_000_000))
-        logger.info("Received questions from the server: %s", questions)
+        logger.info("Received questions from the server: %s", str(questions))
         return questions
 
     def update_progress(self, progress: Progress):

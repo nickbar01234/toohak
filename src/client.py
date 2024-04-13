@@ -35,7 +35,9 @@ class Client:
             scene = SCENES[scene].start_scene()
 
             if scene == SceneState.PLAYER_QUESTION:
+                logger.debug("Main renderer waiting for game starts.")
                 self.state.game_starts.acquire()
+                logger.debug("Main rendere proceed to the next scnee")
 
     def player_listener(self):
         logger.info("Runing listener")
