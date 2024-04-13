@@ -65,6 +65,8 @@ class Server:
 
     # TODO: change this to a general purpose listener?
     # TODO: client needs to send a message to inform server whether if it's player/referee
+    # TODO: receive questions from referee before sending them to players
+    # TODO: add client type identifier (isPlayer)
     def player_listener(self, player_socket: socket.socket, player_addr: str):
         socket_addr = (player_socket, player_addr)
         player_lock = threading.Lock()

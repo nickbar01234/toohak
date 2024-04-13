@@ -7,9 +7,6 @@ from . import utils
 
 
 class EntryScene(AbstractScene):
-    def __init__(self, screen, state, network):
-        super().__init__(screen, state, network)
-
     def start_scene(self):
         print("Inside entry scene")
         clock = pygame.time.Clock()

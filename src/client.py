@@ -1,7 +1,7 @@
 import logging
 import threading
 import pygame
-from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, AddQuestionScene, MonitorScene, Network, STYLE
+from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, AddQuestionScene, MonitorScene, Network, STYLE, FINISHED_ROLE_SELECTION
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -12,6 +12,8 @@ class Client:
         self.network = Network()
         self.state = PlayerState(self.network)
         self.network_barrier = threading.Semaphore(0)
+        self.role_selection_barrier = threading.Semaphore(0)
+        self.is_player = True
 
     def start(self):
         screen = pygame.display.set_mode((STYLE["width"], STYLE["height"]))
@@ -34,7 +36,7 @@ class Client:
         }
 
         listener_thread = threading.Thread(
-            target=self.player_listener, daemon=True)
+            target=self.listener, daemon=True)
         listener_thread.start()
 
         while True:
@@ -45,12 +47,24 @@ class Client:
                 logger.debug("Main renderer waiting for game starts.")
                 self.state.game_starts.acquire()
                 logger.debug("Main rendere proceed to the next scnee")
+            # elif scene in [SceneState.PLAYER_NAME, SceneState.REFEREE_ADD_QUESTION]:
+            elif scene in FINISHED_ROLE_SELECTION:
+                if scene == SceneState.REFEREE_ADD_QUESTION:
+                    self.is_player = False
+                self.role_selection_barrier.release()
 
-    def player_listener(self):
+    def listener(self):
         logger.info("Runing listener")
 
         self.network_barrier.acquire()
+        self.role_selection_barrier.acquire()
 
+        if self.is_player:
+            self.player_mode()
+        else:
+            self.referee_mode()
+
+    def player_mode(self):
         logger.info("Waiting for questions")
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
@@ -71,6 +85,11 @@ class Client:
         logger.info("Received update from server: Game ends")
 
         # TODO: wait for and receive Final rank before exiting
+
+    def referee_mode(self):
+        logger.info("Waiting for questions")
+        debug_sem = threading.Semaphore(0)
+        debug_sem.acquire()
 
 
 if __name__ == "__main__":

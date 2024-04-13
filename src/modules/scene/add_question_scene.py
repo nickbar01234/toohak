@@ -35,6 +35,16 @@ class AddQuestionScene(AbstractScene):
             self.get_screen().fill("white")
             utils.draw_submit_box(
                 self.get_screen(), "lightblue", self.submit_box)
+
+            # TODO: remove placeholder textbox
+            textbox, textbox_border = utils.create_textbox(self.get_screen())
+            pg.draw.rect(self.get_screen(), "lightgreen", textbox)
+            padding_x, padding_y = 10, 12
+            text_surface = STYLE["font"]["text"].render(
+                "TODO: implement add question feature", True, (0, 0, 0))
+            # TODO(nickbar01234) - Handle clip text
+            self.get_screen().blit(text_surface, (textbox.x + padding_x,
+                                                  textbox.y + textbox.height // 2 - padding_y))
             pg.display.flip()
 
     def __add_question(self, question):

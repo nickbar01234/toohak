@@ -15,3 +15,7 @@ class SceneState(Enum):
     REFEREE_MONITOR = auto()  # Referee's view
 
     QUIT = auto()
+
+
+FINISHED_ROLE_SELECTION = (SceneState.PLAYER_NAME,
+                           SceneState.REFEREE_ADD_QUESTION)
