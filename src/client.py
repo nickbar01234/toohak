@@ -47,11 +47,10 @@ class Client:
         logger.info("Waiting for questions")
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
-
         self.network.block_until_game_starts()
         self.state.game_starts.release()
-        logger.info(
-            "Releasing the lock associated with game_starts to allow main thread proceed to next scene.")
+        # logger.info(
+        #     "Releasing the lock associated with game_starts to allow main thread proceed to next scene.")
 
         gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
         while gameContinue:

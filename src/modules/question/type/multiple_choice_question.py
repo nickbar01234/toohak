@@ -29,5 +29,5 @@ class MultipleChoiceQuestion(AbstractQuestion):
     def serialize(self):
         return pickle.dumps(self)
 
-    # def __str__(self):
-    #     return self.get_question()
+    def __str__(self):
+        return f"{self.get_question()} - {self.get_options()} - {self.get_solution()}"

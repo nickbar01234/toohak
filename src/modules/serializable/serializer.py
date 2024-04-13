@@ -17,6 +17,7 @@ NAME = 'name'
 SUCCESS = 'success'
 START = 'start'
 QUESTIONS = 'questions'
+ACK = 'ack'
 LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
 END = 'end'
@@ -88,6 +89,14 @@ def encode_questions(questions: list[AbstractQuestionBuilder]):
 
 def decode_questions(data: bytes):
     return decode(data, QUESTIONS)
+
+
+def encode_ack():
+    return encode(ACK, SUCCESS)
+
+
+def decode_ack(data: bytes):
+    return decode(data, ACK)
 
 
 '''
