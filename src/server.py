@@ -104,12 +104,11 @@ class Server:
             # logger.info(
             #     f"Player {player_name, player_addr} left. Listener threading exiting..")
         except Exception as _:
-            if socket_addr in self.__state.get_all_socket_addr():
-                logger.error(
-                    "Lost the connection with {%s, %s}", player_name, socket_addr)
-
+            information = self.__state.get_socket_addr(socket_addr)
+            logger.error("Lost the connection with %s", information)
         finally:
-            logger.info("Disconnecting %s, %s", player_name, socket_addr)
+            information = self.__state.get_socket_addr(socket_addr)
+            logger.info("Disconnecting %s", information)
             self.__state.remove_player(socket_addr)
             player_socket.close()
 
@@ -124,8 +123,6 @@ class Server:
 
 
 if __name__ == "__main__":
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    IP = s.getsockname()[0]
+    IP = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
     PORT = 5555
     Server(IP, PORT).start()

@@ -28,3 +28,6 @@ class MultipleChoiceQuestion(AbstractQuestion):
 
     def serialize(self):
         return pickle.dumps(self)
+
+    # def __str__(self):
+    #     return self.get_question()

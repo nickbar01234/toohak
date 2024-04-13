@@ -80,7 +80,8 @@ class ServerState:
 
     def remove_player(self, socket_addr):
         with self.__player_states_lock:
-            del self.__player_states[socket_addr]
+            if socket_addr in self.__player_states:
+                del self.__player_states[socket_addr]
         logger.info("Removed connection from %s", socket_addr)
 
     def num_players(self):
@@ -118,6 +119,10 @@ class ServerState:
     def get_all_socket_addr(self):
         with self.__player_states_lock:
             return list(self.__player_states.keys())
+
+    def get_socket_addr(self, addr):
+        with self.__player_states_lock:
+            return self.__player_states.get(addr, None)
 
     def get_questions(self):
         with self.__questions_lock:
