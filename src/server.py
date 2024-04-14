@@ -82,7 +82,10 @@ class Server:
             # finalize establishing connection by receiving player's name
             # may raise InvalidMessage exception
 
-            player_name = self.receive_player_name(socket, player_lock)
+            player_name = self.receive_player_name(player_socket, player_lock)
+            # player_name = s.decode_name(player_socket.recv(2048))
+            # with player_lock:
+            #     player_socket.sendall(s.encode_name_response())
 
             self.__state.add_player(
                 player_socket, player_addr, player_name, player_lock)
