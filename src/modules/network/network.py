@@ -28,7 +28,7 @@ class Network:
     def disconnect(self):
         self.client.close()
 
-    def send_mode(self, mode):
+    def send_mode(self, mode: str):
         self.client.sendall(s.encode_mode(mode))
         s.decode_mode_response(self.client.recv(2048))
         logger.info("Player's mode is updated on the server.")
@@ -73,3 +73,6 @@ class Network:
             "Blocking until received gameends signal from the server.")
         s.decode_endgame(self.client.recv(2048))
         logger.debug("Received game ends signal.")
+
+    def send_signal_start_game(self):
+        self.client.sendall(s.encode_referee_startgame())

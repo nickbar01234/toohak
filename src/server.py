@@ -27,10 +27,10 @@ class Server:
         try:
             while True:
                 client, addr = server_socket.accept()
-                player_listener = threading.Thread(
-                    target=self.player_listener, args=(client, addr), daemon=True)
-                self.__state.add_listener(player_listener)
-                player_listener.start()
+                listener = threading.Thread(
+                    target=self.listener, args=(client, addr), daemon=True)
+                self.__state.add_listener(listener)
+                listener.start()
 
         except KeyboardInterrupt:
             server_socket.close()
@@ -41,7 +41,7 @@ class Server:
     def game_starter_thread(self):
         logger.info("Thread started to monitor the game_starting state.")
 
-        self.__state.gameStarts.acquire()
+        self.__state.wait_game_start()
         logger.info("Game started")
 
         self.broadcast_with_ack("distribute questions", s.encode_questions(
@@ -57,9 +57,18 @@ class Server:
             self.__state.player_signal_start_game(address)
 
     def listener(self, client: socket.socket, addr):
-        logger.info("Listening from %s", addr)
-        # TODO(nickbar01234) - Handle referee or player
-        self.player_listener(client, addr)
+        try:
+            logger.info("Listening from %s", addr)
+            client.sendall(s.encode_connect_success())
+            role_selection = s.decode_mode(client.recv(2048))
+            client.sendall(s.encode_mode_response())
+            match role_selection:
+                case "player":
+                    return self.player_listener(client, addr)
+                case "referee":
+                    return self.referee_listener(client, addr)
+        finally:
+            client.close()
 
     # For each listener's thread to receive message form a specific player
 
@@ -72,8 +81,6 @@ class Server:
 
             # finalize establishing connection by receiving player's name
             # may raise InvalidMessage exception
-            with player_lock:
-                player_socket.sendall(s.encode_connect_success())
 
             player_name = s.decode_name(player_socket.recv(2048))
             with player_lock:
@@ -117,12 +124,25 @@ class Server:
         finally:
             logger.info("Disconnecting %s", socket_addr)
             self.__state.remove_player(socket_addr)
-            player_socket.close()
+
+    def referee_listener(self, referee_socket: socket.socket, referee_addr):
+        try:
+            logger.info(
+                "Referee thread started to listen from %s", referee_addr)
+
+            s.decode_referee_startgame(referee_socket.recv(1024))
+            self.__state.signal_game_start()
+
+            while True:
+                pass
+        finally:
+            return
 
     #
     # Broadcast messages to players when enforcing strict synchronization in certain stages.
     # i.e., no other messages should arrive / be sent during the broadcast
     #
+
     def broadcast_with_ack(self, summary, encoded_message):
         player_sockets = self.__state.get_all_player_sockets_with_locks()
         for name, player_socket, lock in player_sockets:

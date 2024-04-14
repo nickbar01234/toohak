@@ -2,9 +2,7 @@ from datetime import datetime
 import threading
 from enum import Enum, auto
 import logging
-from ..serializable import serializer as s
 from ..question.type.abstract_question import AbstractQuestion
-from .server_state import ServerState
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -31,6 +29,9 @@ class PlayerState:
 
         self.__game_state = GameState.START
         self.game_starts = threading.Semaphore(0)
+
+        # TODO(nickbar01234) - Should this state be here?
+        self.__is_player = True
 
     def get_name(self):
         return self.__name
@@ -85,3 +86,9 @@ class PlayerState:
 
     def set_game_ends(self):
         self.__game_state = GameState.END
+
+    def get_is_player(self):
+        return self.__is_player
+
+    def set_is_player(self, is_player: bool):
+        self.__is_player = is_player

@@ -1,7 +1,7 @@
 import logging
 import threading
 import pygame
-from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, AddQuestionScene, MonitorScene, Network, STYLE, FINISHED_ROLE_SELECTION
+from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE, FINISHED_ROLE_SELECTION
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -11,9 +11,9 @@ class Client:
     def __init__(self):
         self.network = Network()
         self.state = PlayerState(self.network)
-        self.network_barrier = threading.Semaphore(0)
+        self.player_start_barrier = threading.Semaphore(0)
         self.role_selection_barrier = threading.Semaphore(0)
-        self.is_player = True
+        # self.is_player = True
 
     def start(self):
         screen = pygame.display.set_mode((STYLE["width"], STYLE["height"]))
@@ -23,14 +23,15 @@ class Client:
         SCENES = {
             # TODO: EntryScene can remove network -> get from player's self.state
             SceneState.ENTRY: EntryScene(screen, self.state, self.network),
-            SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
+            SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network, self.role_selection_barrier),
 
             # Player scenes
-            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network, self.network_barrier),
+            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network, self.player_start_barrier),
             SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
             SceneState.QUIT: QuitScene(screen, self.state, self.network),
 
             # Referee scenes
+            SceneState.REFEREE_START_SCENE: RefreeStartScene(screen, self.state, self.network),
             SceneState.REFEREE_ADD_QUESTION: AddQuestionScene(screen, self.state, self.network),
             SceneState.REFEREE_MONITOR: MonitorScene(screen, self.state, self.network),
         }
@@ -46,25 +47,26 @@ class Client:
             if scene == SceneState.PLAYER_QUESTION:
                 logger.debug("Main renderer waiting for game starts.")
                 self.state.game_starts.acquire()
-                logger.debug("Main rendere proceed to the next scnee")
-            # elif scene in [SceneState.PLAYER_NAME, SceneState.REFEREE_ADD_QUESTION]:
-            elif scene in FINISHED_ROLE_SELECTION:
-                if scene == SceneState.REFEREE_ADD_QUESTION:
-                    self.is_player = False
-                self.role_selection_barrier.release()
+                logger.debug("Main renderer proceed to the next scene")
+            # TODO(nickbar01234) - Does it make more sense to encapsulate in listener?
+            # elif scene in FINISHED_ROLE_SELECTION:
+            #     if scene == SceneState.REFEREE_ADD_QUESTION:
+            #         self.is_player = False
+            #     self.role_selection_barrier.release()
 
     def listener(self):
         logger.info("Runing listener")
 
-        self.network_barrier.acquire()
         self.role_selection_barrier.acquire()
 
-        if self.is_player:
+        if self.state.get_is_player():
             self.player_mode()
         else:
             self.referee_mode()
 
     def player_mode(self):
+        self.player_start_barrier.acquire()
+
         logger.info("Waiting for questions")
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
