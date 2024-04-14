@@ -11,9 +11,6 @@ class Client:
     def __init__(self):
         self.network = Network()
         self.state = PlayerState(self.network)
-        self.player_start_barrier = threading.Semaphore(0)
-        self.role_selection_barrier = threading.Semaphore(0)
-        # self.is_player = True
 
     def start(self):
         screen = pygame.display.set_mode((STYLE["width"], STYLE["height"]))
@@ -23,10 +20,10 @@ class Client:
         SCENES = {
             # TODO: EntryScene can remove network -> get from player's self.state
             SceneState.ENTRY: EntryScene(screen, self.state, self.network),
-            SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network, self.role_selection_barrier),
+            SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
 
             # Player scenes
-            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network, self.player_start_barrier),
+            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network),
             SceneState.PLAYER_WAIT: WaitScene(screen, self.state, self.network),
             SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
             SceneState.QUIT: QuitScene(screen, self.state, self.network),
@@ -45,16 +42,11 @@ class Client:
             logger.info("On scene %s", scene)
             scene = SCENES[scene].start_scene()
 
-            if scene == SceneState.PLAYER_QUESTION:
-                logger.debug("Main renderer waiting for game starts.")
-                self.state.game_starts.acquire()
-                logger.debug("Main renderer proceed to the next scene")
-
     def listener(self):
         logger.info("Runing listener")
 
         # expect to release in role scene
-        self.role_selection_barrier.acquire()
+        self.state.role_selection_barrier.acquire()
 
         if self.state.get_is_player():
             self.player_role()
@@ -63,7 +55,7 @@ class Client:
 
     def player_role(self):
         # expect to release in name scene
-        self.player_start_barrier.acquire()
+        self.state.player_start_barrier.acquire()
 
         logger.info("Waiting for questions")
         questions = self.network.receive_questions()

@@ -1,7 +1,4 @@
 import pygame
-import threading
-from modules.network.network import Network
-from modules.state.player_state import PlayerState
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
@@ -9,10 +6,6 @@ from . import utils
 
 
 class RoleSelectionScene(AbstractScene):
-    def __init__(self, screen: pygame.Surface, player_state: PlayerState, network: Network, role_selection_barrier: threading.Semaphore):
-        super().__init__(screen, player_state, network)
-        self.__role_selection_barrier = role_selection_barrier
-
     def start_scene(self):
         referee_box = utils.create_button(self.get_screen(), (0, 0))
         player_box = utils.create_button(self.get_screen(), (0, 100))
@@ -37,13 +30,13 @@ class RoleSelectionScene(AbstractScene):
                 if event.type == pygame.MOUSEBUTTONDOWN and referee_box[0].collidepoint(event.pos):
                     self.get_network().send_role("referee")
                     self.get_player_state().set_is_player(False)
-                    self.__role_selection_barrier.release()
+                    self.get_player_state().role_selection_barrier.release()
                     return SceneState.REFEREE_START_SCENE
 
                 if event.type == pygame.MOUSEBUTTONDOWN and player_box[0].collidepoint(event.pos):
                     self.get_network().send_role("player")
                     self.get_player_state().set_is_player(True)
-                    self.__role_selection_barrier.release()
+                    self.get_player_state().role_selection_barrier.release()
                     return SceneState.PLAYER_NAME
 
             self.get_screen().fill("white")
