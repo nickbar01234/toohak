@@ -28,10 +28,10 @@ class Network:
     def disconnect(self):
         self.client.close()
 
-    def send_mode(self, mode: str):
-        self.client.sendall(s.encode_mode(mode))
-        s.decode_mode_response(self.client.recv(2048))
-        logger.info("Player's mode is updated on the server.")
+    def send_role(self, role: str):
+        self.client.sendall(s.encode_role(role))
+        s.decode_role_response(self.client.recv(2048))
+        logger.info("Player's role is updated on the server.")
 
     def send_name(self, name):
         self.client.sendall(s.encode_name(name))

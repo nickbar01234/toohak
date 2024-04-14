@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 
-type game_mode = Literal["player"] | Literal["referee"]
+type game_role = Literal["player"] | Literal["referee"]
 
 '''
 Message format:
@@ -17,7 +17,7 @@ Message format:
     }
 '''
 CONNECT = 'connect'
-MODE = 'mode'
+ROLE = 'role'
 NAME = 'name'
 SUCCESS = 'success'
 START = 'start'
@@ -88,25 +88,25 @@ def decode_name_response(data: bytes) -> bool:
     return decode_response(data, NAME)
 
 #
-# Message Protocol for sending client mode (player/referee)
+# Message Protocol for sending client role (player/referee)
 #
 
 
-def encode_mode(mode: game_mode):
-    logger.info("Game mode %s", mode)
-    return encode(MODE, mode)
+def encode_role(role: game_role):
+    logger.info("Game role %s", role)
+    return encode(ROLE, role)
 
 
-def decode_mode(data: bytes) -> game_mode:
-    return decode(data, MODE)
+def decode_role(data: bytes) -> game_role:
+    return decode(data, ROLE)
 
 
-def encode_mode_response():
-    return encode(MODE, SUCCESS)
+def encode_role_response():
+    return encode(ROLE, SUCCESS)
 
 
-def decode_mode_response(data: bytes) -> bool:
-    return decode_response(data, MODE)
+def decode_role_response(data: bytes) -> bool:
+    return decode_response(data, ROLE)
 
 #
 # Message Protocol for distributing questions

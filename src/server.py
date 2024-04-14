@@ -60,8 +60,8 @@ class Server:
         try:
             logger.info("Listening from %s", addr)
             client.sendall(s.encode_connect_success())
-            role_selection = s.decode_mode(client.recv(2048))
-            client.sendall(s.encode_mode_response())
+            role_selection = s.decode_role(client.recv(2048))
+            client.sendall(s.encode_role_response())
             match role_selection:
                 case "player":
                     return self.player_listener(client, addr)

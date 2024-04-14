@@ -60,11 +60,11 @@ class Client:
         self.role_selection_barrier.acquire()
 
         if self.state.get_is_player():
-            self.player_mode()
+            self.player_role()
         else:
-            self.referee_mode()
+            self.referee_role()
 
-    def player_mode(self):
+    def player_role(self):
         self.player_start_barrier.acquire()
 
         logger.info("Waiting for questions")
@@ -88,7 +88,7 @@ class Client:
 
         # TODO: wait for and receive Final rank before exiting
 
-    def referee_mode(self):
+    def referee_role(self):
         logger.info("Waiting for questions")
         debug_sem = threading.Semaphore(0)
         debug_sem.acquire()
