@@ -38,6 +38,7 @@ class Server:
         # for listener in self.__playerListeners:
         #     listener.join()
 
+    # TODO: tell referee to quit when game ends
     def game_starter_thread(self):
         logger.info("Thread started to monitor the game_starting state.")
 

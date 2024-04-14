@@ -1,7 +1,7 @@
 import logging
 import threading
 import pygame
-from modules import SceneState, EntryScene, QuestionScene, NameScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE, FINISHED_ROLE_SELECTION
+from modules import SceneState, EntryScene, QuestionScene, NameScene, WaitScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -27,6 +27,7 @@ class Client:
 
             # Player scenes
             SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network, self.player_start_barrier),
+            SceneState.PLAYER_WAIT: WaitScene(screen, self.state, self.network),
             SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
             SceneState.QUIT: QuitScene(screen, self.state, self.network),
 
@@ -48,11 +49,6 @@ class Client:
                 logger.debug("Main renderer waiting for game starts.")
                 self.state.game_starts.acquire()
                 logger.debug("Main renderer proceed to the next scene")
-            # TODO(nickbar01234) - Does it make more sense to encapsulate in listener?
-            # elif scene in FINISHED_ROLE_SELECTION:
-            #     if scene == SceneState.REFEREE_ADD_QUESTION:
-            #         self.is_player = False
-            #     self.role_selection_barrier.release()
 
     def listener(self):
         logger.info("Runing listener")

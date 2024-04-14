@@ -5,6 +5,7 @@ from .scene_state import SceneState, FINISHED_ROLE_SELECTION
 from .question_scene import QuestionScene
 from .role_selection_scene import RoleSelectionScene
 from .name_scene import NameScene
+from .wait_scene import WaitScene
 from .add_question_scene import AddQuestionScene
 from .monitor_scene import MonitorScene
 from .referee_start_scene import RefreeStartScene
