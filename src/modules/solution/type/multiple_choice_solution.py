@@ -17,3 +17,6 @@ class MultipleChoiceSolution(AbstractSolution):
         # should have access to player's set of selections
         # solution_builder.add_solution("a")
         return
+
+    def __str__(self):
+        return f"{self.get_solution()}"

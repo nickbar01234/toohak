@@ -9,10 +9,6 @@ from . import utils
 
 
 class EntryScene(AbstractScene):
-    def __init__(self, screen, state, network, network_barrier: threading.Semaphore):
-        super().__init__(screen, state, network)
-        self.__network_barrier = network_barrier
-
     def start_scene(self):
         clock = pygame.time.Clock()
 
@@ -32,10 +28,7 @@ class EntryScene(AbstractScene):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.get_network().connect(ip)
-                        # TODO: move this to separate scene
-                        self.get_network().send_name("Fredkin" + str(random.randint(0, 100)))
-                        self.__network_barrier.release()
-                        return SceneState.PLAYER_QUESTION
+                        return SceneState.PLAYER_NAME
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         ip = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:

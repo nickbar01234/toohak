@@ -17,6 +17,7 @@ NAME = 'name'
 SUCCESS = 'success'
 START = 'start'
 QUESTIONS = 'questions'
+ACK = 'ack'
 LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
 END = 'end'
@@ -44,10 +45,9 @@ def decode(data: bytes, action: str):
             raise InvalidMessageError
 
 
-'''
-Message Protocol for establishing connection
-'''
-
+#
+# Message Protocol for establishing connection
+#
 
 def encode_connect_success():
     return encode(CONNECT, SUCCESS)
@@ -77,9 +77,9 @@ def decode_name_response(data: bytes) -> bool:
     return decode_response(data, NAME)
 
 
-'''
-Message Protocol for distributing questions TODO: testing
-'''
+#
+# Message Protocol for distributing questions
+#
 
 
 def encode_questions(questions: list[AbstractQuestionBuilder]):
@@ -90,26 +90,33 @@ def decode_questions(data: bytes):
     return decode(data, QUESTIONS)
 
 
-'''
-Message Protocol for server to signal players game start
-'''
+def encode_ack(for_action: str):
+    return encode(ACK, for_action)
 
 
-def encode_startgame():
-    return encode(START, START)
+def decode_ack(data: bytes):
+    return decode(data, ACK)
+
+#
+# Message Protocol for server to signal players game start
+#
+
+
+# TODO: global type aliases
+def encode_startgame(init_top5players: list[tuple[str, int]]):
+    return encode(START, init_top5players)
 
 
 def decode_startgame(data: bytes):
-    logger.debug("Decoding data to hopefully get startgame: %s", data)
     return decode(data, START)
 
-
-'''
-Message Protocol for updating leaders' board TODO: testing
-'''
-
+#
+# Message Protocol for updating leaders' board TODO: testing
+#
 
 # TODO: global file to share type?
+
+
 def encode_leadersboard(top5players: list[tuple[str, int]]):
     return encode(LEADERSBOARD, top5players)
 
@@ -118,10 +125,9 @@ def decode_leadersboard(data: bytes):
     return decode(data, LEADERSBOARD)
 
 
-'''
-Message Protocol for updating player's progress 
-'''
-
+#
+# Message Protocol for updating player's progress
+#
 
 def encode_progress(progress: list[bool]):  # TODO: global file to share type?
     return encode(INDIVIDUAL_PROGRESS, progress)
@@ -131,10 +137,9 @@ def decode_progress(data: bytes):
     return decode(data, INDIVIDUAL_PROGRESS)
 
 
-'''
-Message Protocol for the server to notify players that game ends
-'''
-
+#
+# Message Protocol for the server to notify players that game ends
+#
 
 def encode_endgame():
     return encode(END, "")
@@ -161,9 +166,9 @@ def decode_update_or_endgame(data: bytes) -> tuple[bool, any]:
             raise InvalidMessageError
 
 
-'''
-Message Protocol for players to notify the server they're leaving
-'''
+#
+# Message Protocol for players to notify the server they're leaving
+#
 
 
 def encode_leave():

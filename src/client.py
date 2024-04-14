@@ -20,8 +20,8 @@ class Client:
 
         SCENES = {
             # TODO: EntryScene can remove network -> get from player's self.state
-            SceneState.ENTRY: EntryScene(screen, self.state, self.network, self.network_barrier),
-            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network),
+            SceneState.ENTRY: EntryScene(screen, self.state, self.network),
+            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network, self.network_barrier),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
             SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
             SceneState.QUIT: QuitScene(screen, self.state, self.network)
@@ -35,7 +35,9 @@ class Client:
             scene = SCENES[scene].start_scene()
 
             if scene == SceneState.PLAYER_QUESTION:
+                logger.debug("Main renderer waiting for game starts.")
                 self.state.game_starts.acquire()
+                logger.debug("Main rendere proceed to the next scnee")
 
     def player_listener(self):
         logger.info("Runing listener")
@@ -45,18 +47,20 @@ class Client:
         logger.info("Waiting for questions")
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
+        logger.info("Received questions.")
 
-        self.network.block_until_game_starts()
+        init_leadersboard = self.network.block_until_game_starts()
+        self.state.set_leadersboard(init_leadersboard)
         self.state.game_starts.release()
-        logger.info("Received game starts signal from server.")
 
-        gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        while gameContinue:
+        game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        while game_continues:
             self.state.set_leadersboard(leadersboard)
             logger.info(
                 "Leader's board updated: {%s}", self.state.get_leadersboard())
-            gameContinue, leadersboard = self.network.receive_leadersboard_or_game_ends()
+            game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
 
+        self.network.block_until_game_ends()
         logger.info("Received update from server: Game ends")
 
         # TODO: wait for and receive Final rank before exiting
