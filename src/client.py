@@ -39,6 +39,13 @@ class Client:
                 self.state.game_starts.acquire()
                 logger.debug("Main rendere proceed to the next scnee")
 
+            if not scene:
+                break
+
+        listener_thread.join()
+        logger.info("Client exiting in main thread")
+        pygame.quit()
+
     def player_listener(self):
         logger.info("Runing listener")
 
