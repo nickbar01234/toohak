@@ -1,6 +1,6 @@
 import logging
 import threading
-import pygame
+import pygame as pg
 from modules import SceneState, EntryScene, QuestionScene, NameScene, WaitScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE
 
 logger = logging.getLogger(__name__)
@@ -13,8 +13,8 @@ class Client:
         self.state = PlayerState(self.network)
 
     def start(self):
-        screen = pygame.display.set_mode((STYLE["width"], STYLE["height"]))
-        pygame.display.set_caption("toohak")
+        screen = pg.display.set_mode((STYLE["width"], STYLE["height"]))
+        pg.display.set_caption("toohak")
         scene = SceneState.ENTRY
 
         SCENES = {
@@ -33,6 +33,9 @@ class Client:
             SceneState.REFEREE_ADD_QUESTION: AddQuestionScene(screen, self.state, self.network),
             SceneState.REFEREE_MONITOR: MonitorScene(screen, self.state, self.network),
         }
+
+        music_thread = threading.Thread(target=self.music_thread, daemon=True)
+        music_thread.start()
 
         listener_thread = threading.Thread(
             target=self.listener, daemon=True)
@@ -82,6 +85,10 @@ class Client:
         logger.info("Waiting for questions")
         debug_sem = threading.Semaphore(0)
         debug_sem.acquire()
+
+    def music_thread(self):
+        pg.mixer.music.load("assets/music/toohak_song.mp3")
+        pg.mixer.music.play(loops=-1)
 
 
 if __name__ == "__main__":
