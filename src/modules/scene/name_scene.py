@@ -9,9 +9,9 @@ from . import utils
 
 
 class NameScene(AbstractScene):
-    def __init__(self, screen, state, network, network_barrier: threading.Semaphore):
+    def __init__(self, screen, state, network, player_start_barrier: threading.Semaphore):
         super().__init__(screen, state, network)
-        self.__network_barrier = network_barrier
+        self.__player_start_barrier = player_start_barrier
 
     def start_scene(self):
         # TODO(nickbar01234) - Need to extract into a input class
@@ -32,7 +32,7 @@ class NameScene(AbstractScene):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.get_network().send_name(name)
-                        self.__network_barrier.release()
+                        self.__player_start_barrier.release()
                         return SceneState.PLAYER_QUESTION
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         name = pyperclip.paste()

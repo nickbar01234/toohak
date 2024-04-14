@@ -1,9 +1,13 @@
 import pickle
+import logging
+from typing import Literal
 from ..question.abstract_question_builder import AbstractQuestionBuilder
 
-import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+
+
+type game_mode = Literal["player"] | Literal["referee"]
 
 '''
 Message format:
@@ -23,6 +27,8 @@ LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
 END = 'end'
 LEAVE = 'leave'
+
+REFEREE_START_GAME = "referee_start"
 
 
 class InvalidMessageError(Exception):
@@ -86,12 +92,13 @@ def decode_name_response(data: bytes) -> bool:
 #
 
 
-def encode_mode(mode: bool):
+def encode_mode(mode: game_mode):
+    logger.info("Game mode %s", mode)
     return encode(MODE, mode)
 
 
-def decode_mode(data: bytes) -> bool:
-    return decode_response(data, MODE)
+def decode_mode(data: bytes) -> game_mode:
+    return decode(data, MODE)
 
 
 def encode_mode_response():
@@ -201,3 +208,11 @@ def encode_leave():
 
 def decode_leave(data: bytes):
     return decode(data, LEAVE)
+
+
+def encode_referee_startgame():
+    return encode(REFEREE_START_GAME, "")
+
+
+def decode_referee_startgame(data: bytes):
+    return decode(data, REFEREE_START_GAME)

@@ -32,6 +32,19 @@ def create_submit_box():
     return box
 
 
+def create_button(screen: pg.Surface, margin: tuple[int, int]):
+    border = 3
+    width, height = 512, 64
+    center_x, center_y = screen.get_rect().center
+    textbox_border = pg.Rect(0, 0, width, height)
+    textbox_border.center = (center_x, center_y)
+    textbox_border = textbox_border.move(*margin)
+    left_x, left_y = textbox_border.topleft
+    textbox = pg.Rect(0, 0, width - border * 2, height - border * 2)
+    textbox.topleft = (left_x + border, left_y + border)
+    return textbox, textbox_border
+
+
 def draw_submit_box(screen: pg.Surface, color, submit_box: pg.Rect):
     pg.draw.rect(screen, color, submit_box)
     # TODO: hardcoding it to start game for now

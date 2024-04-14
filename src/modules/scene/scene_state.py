@@ -12,6 +12,7 @@ class SceneState(Enum):
     PLAYER_END = auto()  # Final result
 
     REFEREE_ADD_QUESTION = auto()  # Referee adds questions to question bank
+    REFEREE_START_SCENE = auto()
     REFEREE_MONITOR = auto()  # Referee's view
 
     QUIT = auto()
