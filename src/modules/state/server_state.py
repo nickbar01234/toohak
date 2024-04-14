@@ -1,6 +1,7 @@
 import logging
 import socket
 import threading
+from ..type.aliases import *
 from ..serializable import serializer as s
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
@@ -27,14 +28,6 @@ questions = [
     .build()
 ]
 
-Name = str
-Addr = str
-Socket = socket.socket
-Lock = threading.Lock
-PlayerProgress = list[bool]
-PlayerStates = dict[tuple[Socket, Addr],
-                    tuple[Name, PlayerProgress, Lock, Lock]]
-
 
 class ServerState:
     def __init__(self, ip, port):
@@ -46,7 +39,7 @@ class ServerState:
         # players states
         self.__player_states_lock = threading.Lock()  # guard both states and top5
         self.__player_states: PlayerStates = {}
-        self.__top5players: list[tuple[Name, int]] = []
+        self.__top5players: LeadersBoard = []
 
         # only main thread should access
         self.__playerListeners: list[threading.Thread] = []
@@ -64,7 +57,7 @@ class ServerState:
     def add_listener(self, listener):
         self.__playerListeners.append(listener)
 
-    def add_player(self, psocket, paddr, pname, plock):
+    def add_player(self, psocket: Socket, paddr: Addr, pname: Name, plock: threading.Lock):
         logger.debug("Adding player {%s, %s, %s}", pname, psocket, paddr)
 
         with self.__player_states_lock:
@@ -81,20 +74,20 @@ class ServerState:
         logger.info("Added player {%s, %s, %s}",
                     pname, psocket.getsockname(), paddr)
 
-    def remove_player(self, socket_addr):
+    def remove_player(self, socket_addr: SocketAddr):
         with self.__player_states_lock:
             if socket_addr in self.__player_states:
                 del self.__player_states[socket_addr]
         logger.info("Removed connection from %s", socket_addr)
 
-    def player_wait_start_game(self, socket_addr):
+    def player_wait_start_game(self, socket_addr: SocketAddr):
         player = None
         with self.__player_states_lock:
             player = self.__player_states.get(socket_addr, None)
         if player is not None:
             player[-1].acquire()
 
-    def player_signal_start_game(self, socket_addr):
+    def player_signal_start_game(self, socket_addr: SocketAddr):
         with self.__player_states_lock:
             if socket_addr in self.__player_states:
                 self.__player_states[socket_addr][-1].release()
@@ -103,7 +96,7 @@ class ServerState:
         with self.__player_states_lock:
             return len(self.__player_states)
 
-    def update_player_progress(self, socket_addr, new_progress):
+    def update_player_progress(self, socket_addr: SocketAddr, new_progress: PlayerProgress):
         with self.__player_states_lock:
             name, _, lock, game_start_lock = self.__player_states[socket_addr]
             self.__player_states[socket_addr] = name, new_progress, lock, game_start_lock
@@ -142,7 +135,7 @@ class ServerState:
         with self.__player_states_lock:
             return list(self.__player_states.keys())
 
-    def get_socket_addr(self, addr):
+    def get_socket_addr(self, addr: Addr):
         with self.__player_states_lock:
             return self.__player_states.get(addr, None)
 

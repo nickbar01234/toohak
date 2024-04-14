@@ -1,5 +1,5 @@
 import pickle
-from ..question.abstract_question_builder import AbstractQuestionBuilder
+from ..type.aliases import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def encode_name(name: str):
     return encode(NAME, name)
 
 
-def decode_name(data: bytes) -> str:
+def decode_name(data: bytes) -> Name:
     return decode(data, NAME)
 
 
@@ -82,11 +82,11 @@ def decode_name_response(data: bytes) -> bool:
 #
 
 
-def encode_questions(questions: list[AbstractQuestionBuilder]):
+def encode_questions(questions: list[Question]):
     return encode(QUESTIONS, questions)
 
 
-def decode_questions(data: bytes):
+def decode_questions(data: bytes) -> list[Question]:
     return decode(data, QUESTIONS)
 
 
@@ -103,7 +103,7 @@ def decode_ack(data: bytes):
 
 
 # TODO: global type aliases
-def encode_startgame(init_top5players: list[tuple[str, int]]):
+def encode_startgame(init_top5players: LeadersBoard):
     return encode(START, init_top5players)
 
 
@@ -117,11 +117,11 @@ def decode_startgame(data: bytes):
 # TODO: global file to share type?
 
 
-def encode_leadersboard(top5players: list[tuple[str, int]]):
+def encode_leadersboard(top5players: LeadersBoard):
     return encode(LEADERSBOARD, top5players)
 
 
-def decode_leadersboard(data: bytes):
+def decode_leadersboard(data: bytes) -> LeadersBoard:
     return decode(data, LEADERSBOARD)
 
 
@@ -129,7 +129,7 @@ def decode_leadersboard(data: bytes):
 # Message Protocol for updating player's progress
 #
 
-def encode_progress(progress: list[bool]):  # TODO: global file to share type?
+def encode_progress(progress: PlayerProgress):  # TODO: global file to share type?
     return encode(INDIVIDUAL_PROGRESS, progress)
 
 
@@ -151,12 +151,12 @@ def decode_endgame(data: bytes):
 # returns (False, "") if game ends or (True, Leadersboard) if it's an update
 
 
-def decode_update_or_endgame(data: bytes) -> tuple[bool, any]:
+def decode_update_or_endgame(data: bytes) -> tuple[bool, LeadersBoard]:
     decoded = pickle.loads(data)
     match decoded:
         case {'action': action, 'msg': msg} if action == END:
             logger.debug("Decoded message: game ends")
-            return (False, "")
+            return (False, [])
         case {'action': action, 'msg': msg} if action == LEADERSBOARD:
             logger.debug(f"Decoded message: leader's board - {str(msg)}")
             return (True, msg)
