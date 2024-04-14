@@ -22,6 +22,8 @@ class QuitScene(AbstractScene):
             pygame.display.flip()
 
             # TODO: Do something more interesting
-            time.sleep(3)
-            pygame.quit()
-            sys.exit(0)
+            # TODO: notice that even I delay quiting pygame, as long as the scene ends, the clients will get disconnected through an EOFError (pickle.loads)
+            time.sleep(10)
+            return None
+            # pygame.quit()
+            # sys.exit(0)
