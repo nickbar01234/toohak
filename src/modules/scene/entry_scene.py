@@ -1,5 +1,3 @@
-import threading
-import random
 import pygame
 import pyperclip
 from .abstract_scene import AbstractScene
@@ -10,6 +8,7 @@ from . import utils
 
 class EntryScene(AbstractScene):
     def start_scene(self):
+        print("Inside entry scene")
         clock = pygame.time.Clock()
 
         ip = ""
@@ -28,7 +27,7 @@ class EntryScene(AbstractScene):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.get_network().connect(ip)
-                        return SceneState.PLAYER_NAME
+                        return SceneState.ROLE_SELECTION
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         ip = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:

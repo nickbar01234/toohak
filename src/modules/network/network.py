@@ -23,8 +23,15 @@ class Network:
     def disconnect(self):
         self.client.close()
 
+    def send_role(self, role: str):
+        self.client.sendall(s.encode_role(role))
+        # TODO: match on received response to handle errors?
+        s.decode_role_response(self.client.recv(2048))
+        logger.info("Player's role is updated on the server.")
+
     def send_name(self, name):
         self.client.sendall(s.encode_name(name))
+        # TODO: match on received response to handle errors?
         s.decode_name_response(self.client.recv(2048))
         logger.info("Player's name is updated on the server.")
 
@@ -63,3 +70,6 @@ class Network:
             "Blocking until received gameends signal from the server.")
         s.decode_endgame(self.client.recv(2048))
         logger.debug("Received game ends signal.")
+
+    def send_signal_start_game(self):
+        self.client.sendall(s.encode_referee_startgame())

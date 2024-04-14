@@ -6,9 +6,17 @@ class SceneState(Enum):
 
     ROLE_SELECTION = auto()
 
-    PLAYER_WAITING = auto()  # Player's waiting room to start the game
+    PLAYER_WAIT = auto()  # Player's waiting room
     PLAYER_NAME = auto()  # Player's entering name
     PLAYER_QUESTION = auto()  # Quiz in progress
     PLAYER_END = auto()  # Final result
 
+    REFEREE_ADD_QUESTION = auto()  # Referee adds questions to question bank
+    REFEREE_START_SCENE = auto()
+    REFEREE_MONITOR = auto()  # Referee's view
+
     QUIT = auto()
+
+
+FINISHED_ROLE_SELECTION = (SceneState.PLAYER_NAME,
+                           SceneState.REFEREE_ADD_QUESTION)

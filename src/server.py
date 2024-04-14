@@ -28,10 +28,10 @@ class Server:
         try:
             while True:
                 client, addr = server_socket.accept()
-                player_listener = threading.Thread(
-                    target=self.player_listener, args=(client, addr), daemon=True)
-                self.__state.add_listener(player_listener)
-                player_listener.start()
+                listener = threading.Thread(
+                    target=self.listener, args=(client, addr), daemon=True)
+                self.__state.add_listener(listener)
+                listener.start()
 
         except KeyboardInterrupt:
             server_socket.close()
@@ -39,10 +39,11 @@ class Server:
         # for listener in self.__playerListeners:
         #     listener.join()
 
+    # TODO: tell referee to quit when game ends
     def game_starter_thread(self):
         logger.info("Thread started to monitor the game_starting state.")
 
-        self.__state.gameStarts.acquire()
+        self.__state.wait_game_start()
         logger.info("Game started")
 
         self.broadcast_with_ack("distribute questions", s.encode_questions(
@@ -57,10 +58,19 @@ class Server:
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
 
-    def listener(self, client: Socket, addr: Addr):
-        logger.info("Listening from %s", addr)
-        # TODO(nickbar01234) - Handle referee or player
-        self.player_listener(client, addr)
+    def listener(self, client: socket.socket, addr):
+        try:
+            logger.info("Listening from %s", addr)
+            client.sendall(s.encode_connect_success())
+            role_selection = s.decode_role(client.recv(2048))
+            client.sendall(s.encode_role_response())
+            match role_selection:
+                case "player":
+                    return self.player_listener(client, addr)
+                case "referee":
+                    return self.referee_listener(client, addr)
+        finally:
+            client.close()
 
     # For each listener's thread to receive message form a specific player
 
@@ -73,12 +83,11 @@ class Server:
 
             # finalize establishing connection by receiving player's name
             # may raise InvalidMessage exception
-            with player_lock:
-                player_socket.sendall(s.encode_connect_success())
 
-            player_name = s.decode_name(player_socket.recv(2048))
-            with player_lock:
-                player_socket.sendall(s.encode_name_response())
+            player_name = self.receive_player_name(player_socket, player_lock)
+            # player_name = s.decode_name(player_socket.recv(2048))
+            # with player_lock:
+            #     player_socket.sendall(s.encode_name_response())
 
             self.__state.add_player(
                 player_socket, player_addr, player_name, player_lock)
@@ -118,7 +127,19 @@ class Server:
         finally:
             logger.info("Disconnecting %s", socket_addr)
             self.__state.remove_player(socket_addr)
-            player_socket.close()
+
+    def referee_listener(self, referee_socket: socket.socket, referee_addr):
+        try:
+            logger.info(
+                "Referee thread started to listen from %s", referee_addr)
+
+            s.decode_referee_startgame(referee_socket.recv(1024))
+            self.__state.signal_game_start()
+
+            while True:
+                pass
+        finally:
+            return
 
     #
     # Broadcast messages to players when enforcing strict synchronization in certain stages.
@@ -148,6 +169,13 @@ class Server:
                 player_socket.sendall(encoded_message)
                 logger.info(
                     "Async - Broadcasted {%s} to Player {%s}", summary, name)
+
+    def receive_player_name(self, player_socket: socket, player_lock: threading.Lock):
+        player_name = s.decode_name(player_socket.recv(2048))
+        with player_lock:
+            player_socket.sendall(s.encode_name_response())
+
+        return player_name
 
 
 if __name__ == "__main__":
