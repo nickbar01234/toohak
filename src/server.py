@@ -3,6 +3,7 @@ import socket
 import threading
 from modules import serializer as s
 from modules import ServerState
+from modules.type.aliases import *
 
 logger = logging.getLogger()
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -50,19 +51,20 @@ class Server:
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
         init_top5players = [(n, 0)
                             for n in self.__state.get_all_player_names()[:5]]
-        self.broadcast_with_ack("game starts", s.encode_startgame(init_top5players))
+        self.broadcast_with_ack(
+            "game starts", s.encode_startgame(init_top5players))
 
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
 
-    def listener(self, client: socket.socket, addr):
+    def listener(self, client: Socket, addr: Addr):
         logger.info("Listening from %s", addr)
         # TODO(nickbar01234) - Handle referee or player
         self.player_listener(client, addr)
 
     # For each listener's thread to receive message form a specific player
 
-    def player_listener(self, player_socket: socket.socket, player_addr):
+    def player_listener(self, player_socket: Socket, player_addr: Addr):
         socket_addr = (player_socket, player_addr)
         player_lock = threading.Lock()
         try:
@@ -91,7 +93,8 @@ class Server:
                 logger.info("Receive %s from %s", progress, player_name)
                 self.__state.update_player_progress(socket_addr, progress)
                 if (top5 := self.__state.update_top5()):
-                    self.broadcast_without_ack("new top5", s.encode_leadersboard(top5))
+                    self.broadcast_without_ack(
+                        "new top5", s.encode_leadersboard(top5))
 
             # # Players have finished all the questions
             # logger.info(
@@ -121,7 +124,7 @@ class Server:
     # Broadcast messages to players when enforcing strict synchronization in certain stages.
     # i.e., no other messages should arrive / be sent during the broadcast
     #
-    def broadcast_with_ack(self, summary, encoded_message):
+    def broadcast_with_ack(self, summary: str, encoded_message: bytes):
         player_sockets = self.__state.get_all_player_sockets_with_locks()
         for name, player_socket, lock in player_sockets:
             with lock:
@@ -135,10 +138,10 @@ class Server:
                 # TODO: but we should try to mae it more concurrent
                 # TODO: Try to move the broacasting questions and game start to each player thread? use barriers??
 
-    # 
+    #
     # Broadcast messages to players when there's no need to hear back from players.
     #
-    def broadcast_without_ack(self, summary, encoded_message):
+    def broadcast_without_ack(self, summary: str, encoded_message: bytes):
         player_sockets = self.__state.get_all_player_sockets_with_locks()
         for name, player_socket, lock in player_sockets:
             with lock:

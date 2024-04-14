@@ -5,6 +5,7 @@ import logging
 from ..serializable import serializer as s
 from ..question.type.abstract_question import AbstractQuestion
 from .server_state import ServerState
+from ..type.aliases import *
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -23,10 +24,10 @@ class PlayerState:
         self.__network = network
         self.__name = None
 
-        self.__questions = []
-        self.__progress: list[bool] = []
+        self.__questions: list[Question] = []
+        self.__progress: PlayerProgress = []
         self.__init_time = None
-        self.__leadersboard = []
+        self.__leadersboard: LeadersBoard = []
         self.__leadersboard_lock = threading.Lock()
 
         self.__game_state = GameState.START
@@ -35,7 +36,7 @@ class PlayerState:
     def get_name(self):
         return self.__name
 
-    def set_name(self, name: str):
+    def set_name(self, name: Name):
         # TODO - Send server
         if not isinstance(name, str):
             raise RuntimeError(
@@ -43,10 +44,10 @@ class PlayerState:
 
         self.__name = name
 
-    def get_questions(self):
+    def get_questions(self) -> list[Question]:
         return self.__questions
 
-    def set_questions(self, questions: list[AbstractQuestion]):
+    def set_questions(self, questions: list[Question]):
         if not isinstance(questions, list):
             raise RuntimeError(
                 f"Expect name to be of type list, but received type {type(questions)}")
@@ -54,10 +55,10 @@ class PlayerState:
         self.__questions = questions
         logger.info("Received questions and updated the local question bank.")
 
-    def get_progress(self):
+    def get_progress(self) -> PlayerProgress:
         return self.__progress
 
-    def set_progress(self, correctness):
+    def set_progress(self, correctness: bool):
         # TODO - Send server
         if not isinstance(correctness, bool):
             raise RuntimeError(
@@ -71,11 +72,11 @@ class PlayerState:
     def set_init_time(self):
         self.__init_time = datetime.now()
 
-    def get_leadersboard(self) -> list[tuple[str, int]]:
+    def get_leadersboard(self) -> LeadersBoard:
         with self.__leadersboard_lock:
             return list(self.__leadersboard)
 
-    def set_leadersboard(self, leadersboard: list[tuple[str, int]]):
+    def set_leadersboard(self, leadersboard: LeadersBoard):
         with self.__leadersboard_lock:
             self.__leadersboard = leadersboard
             logger.debug("Set leadersboard: %s", self.__leadersboard)
