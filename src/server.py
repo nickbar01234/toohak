@@ -82,9 +82,7 @@ class Server:
             # finalize establishing connection by receiving player's name
             # may raise InvalidMessage exception
 
-            player_name = s.decode_name(player_socket.recv(2048))
-            with player_lock:
-                player_socket.sendall(s.encode_name_response())
+            player_name = self.receive_player_name(socket, player_lock)
 
             self.__state.add_player(
                 player_socket, player_addr, player_name, player_lock)
@@ -167,6 +165,13 @@ class Server:
                 player_socket.sendall(encoded_message)
                 logger.info(
                     "Async - Broadcasted {%s} to Player {%s}", summary, name)
+
+    def receive_player_name(self, player_socket: socket, player_lock: threading.Lock):
+        player_name = s.decode_name(player_socket.recv(2048))
+        with player_lock:
+            player_socket.sendall(s.encode_name_response())
+
+        return player_name
 
 
 if __name__ == "__main__":

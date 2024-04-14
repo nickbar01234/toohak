@@ -57,6 +57,7 @@ class Client:
     def listener(self):
         logger.info("Runing listener")
 
+        # expect to release in role scene
         self.role_selection_barrier.acquire()
 
         if self.state.get_is_player():
@@ -65,6 +66,7 @@ class Client:
             self.referee_role()
 
     def player_role(self):
+        # expect to release in name scene
         self.player_start_barrier.acquire()
 
         logger.info("Waiting for questions")
