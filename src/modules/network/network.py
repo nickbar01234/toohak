@@ -48,12 +48,10 @@ class Network:
     def receive_leadersboard(self):
         leadersboard = s.decode_leadersboard(self.client.recv(2048))
         logger.debug("Received leader's board from server: %s", leadersboard)
-        self.client.sendall(s.encode_ack("leadersboard"))
         return leadersboard
 
     def receive_leadersboard_or_game_ends(self):
         data = self.client.recv(2048)
-        self.client.sendall(s.encode_ack("leadersboard or game ends"))
         return s.decode_update_or_endgame(data)
 
     def block_until_game_starts(self):

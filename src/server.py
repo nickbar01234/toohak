@@ -44,13 +44,13 @@ class Server:
         self.__state.gameStarts.acquire()
         logger.info("Game started")
 
-        self.broadcast("distribute questions", s.encode_questions(
+        self.broadcast_with_ack("distribute questions", s.encode_questions(
             self.__state.get_questions()))
 
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
         init_top5players = [(n, 0)
                             for n in self.__state.get_all_player_names()[:5]]
-        self.broadcast("game starts", s.encode_startgame(init_top5players))
+        self.broadcast_with_ack("game starts", s.encode_startgame(init_top5players))
 
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
@@ -91,7 +91,7 @@ class Server:
                 logger.info("Receive %s from %s", progress, player_name)
                 self.__state.update_player_progress(socket_addr, progress)
                 if (top5 := self.__state.update_top5()):
-                    self.broadcast("new top5", s.encode_leadersboard(top5))
+                    self.broadcast_without_ack("new top5", s.encode_leadersboard(top5))
 
             # # Players have finished all the questions
             # logger.info(
@@ -117,18 +117,34 @@ class Server:
             self.__state.remove_player(socket_addr)
             player_socket.close()
 
-    # Message protocol for the server to broadcast updates to players and referee
-    def broadcast(self, summary, encoded_message):
+    #
+    # Broadcast messages to players when enforcing strict synchronization in certain stages.
+    # i.e., no other messages should arrive / be sent during the broadcast
+    #
+    def broadcast_with_ack(self, summary, encoded_message):
         player_sockets = self.__state.get_all_player_sockets_with_locks()
         for name, player_socket, lock in player_sockets:
             with lock:
                 player_socket.sendall(encoded_message)
+        for name, player_socket, lock in player_sockets:
+            with lock:
                 _ack = s.decode_ack(player_socket.recv(1024))  # Receiving ack
                 logger.info(
-                    "Broadcasted {%s} to Player {%s}", summary, name)
+                    "Sync - Broadcasted {%s} to Player {%s}", summary, name)
                 # TODO: keep it safe in one lock -> otherwise the player_listnere might grab the lock and message won't be recognized
                 # TODO: but we should try to mae it more concurrent
                 # TODO: Try to move the broacasting questions and game start to each player thread? use barriers??
+
+    # 
+    # Broadcast messages to players when there's no need to hear back from players.
+    #
+    def broadcast_without_ack(self, summary, encoded_message):
+        player_sockets = self.__state.get_all_player_sockets_with_locks()
+        for name, player_socket, lock in player_sockets:
+            with lock:
+                player_socket.sendall(encoded_message)
+                logger.info(
+                    "Async - Broadcasted {%s} to Player {%s}", summary, name)
 
 
 if __name__ == "__main__":
