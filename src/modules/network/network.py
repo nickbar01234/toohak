@@ -1,4 +1,3 @@
-import threading
 import socket
 import logging
 from ..type.aliases import *
@@ -64,12 +63,8 @@ class Network:
         self.client.sendall(s.encode_ack("game starts"))
         return initial_leadersboard
 
-    def block_until_game_ends(self):
-        self.client.setblocking(True)
-        logger.debug(
-            "Blocking until received gameends signal from the server.")
-        s.decode_endgame(self.client.recv(2048))
-        logger.debug("Received game ends signal.")
-
     def send_signal_start_game(self):
         self.client.sendall(s.encode_referee_startgame())
+
+    def send_elapsed_time(self, seconds: int):
+        self.client.sendall(s.encode_elapse_time(seconds))
