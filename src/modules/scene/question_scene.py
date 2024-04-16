@@ -4,6 +4,7 @@ from time import sleep
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
+from . import utils
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 # from ..state.player_state import PlayerState
@@ -62,11 +63,12 @@ class QuestionScene(AbstractScene):
                 self.get_screen().blit(text, text_rect)
 
             # draw submit box
-            pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)
-            submit_text_surface = STYLE["font"]["text"].render(
-                "Submit", True, (0, 0, 0))
-            self.get_screen().blit(submit_text_surface, (self.submit_box.x + 10,
-                                                         self.submit_box.y + self.submit_box.height // 2 - 12))
+            utils.draw_submit_box(self.get_screen(), self.submit_box)
+            # pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)
+            # submit_text_surface = STYLE["font"]["text"].render(
+            #     "Submit", True, (0, 0, 0))
+            # self.get_screen().blit(submit_text_surface, (self.submit_box.x + 10,
+            #                                              self.submit_box.y + self.submit_box.height // 2 - 12))
 
             # draw all options
             self.__draw_options()

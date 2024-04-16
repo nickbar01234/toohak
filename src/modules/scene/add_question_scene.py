@@ -1,3 +1,4 @@
+import sys
 import random
 import pygame as pg
 import pyperclip
@@ -15,40 +16,64 @@ class AddQuestionScene(AbstractScene):
 
         self.questions = []
         self.submit_box = utils.create_submit_box()
+        self.add_box = utils.create_add_box()
         # self.add_question_box = self.__create_add_question_box()
 
     def start_scene(self):
+        # TODO(nickbar01234) - Need to extract into a input class
+        clock = pg.time.Clock()
+        question = ""
+        active = False
         while True:
-            for event in pg.event.get():
-                self.handle_quit(event)
-                match event.type:
-                    case pg.MOUSEBUTTONDOWN:
-                        # submit
-                        if self.submit_box.collidepoint(event.pos):
-                            self.__submit()
-                            return SceneState.REFEREE_MONITOR
+            question_box, question_box_border = utils.create_textbox(
+                self.get_screen(), dimension=(768, 64), distance_to_top=70)
 
-                        # add question
-                        # if self.add_question_box.collidepoint(event.pos):
-                        #     self.__add_question(question)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    sys.exit(0)
+
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    active = question_box.collidepoint(event.pos)
+
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_RETURN:
+                        self.__add_question(question)
+                        print(self.questions)
+                        # TODO: return the next scene here
+                    elif event.key == pg.K_v and (event.mod & pg.KMOD_CTRL or event.mod & pg.KMOD_META):
+                        question = pyperclip.paste()
+                    elif event.key == pg.K_BACKSPACE:
+                        question = question[:-1]
+                    else:
+                        question += event.unicode
 
             self.get_screen().fill("white")
             utils.draw_submit_box(
-                self.get_screen(), "lightblue", self.submit_box)
+                self.get_screen(), self.submit_box, text="Finish and Submit")
+            utils.draw_add_box(self.get_screen(),
+                               self.add_box, text="Add Question")
 
-            # TODO: remove placeholder textbox
-            textbox, textbox_border = utils.create_textbox(self.get_screen())
-            pg.draw.rect(self.get_screen(), "lightgreen", textbox)
+            utils.create_prompt(self.get_screen(),
+                                "Add Question:", (0, 20), "question")
+
+            pg.draw.rect(self.get_screen(), pg.Color(
+                "#8489FBFF") if active else "black", question_box_border)
+            pg.draw.rect(self.get_screen(), "white", question_box)
+
             padding_x, padding_y = 10, 12
             text_surface = STYLE["font"]["text"].render(
-                "TODO: implement add question feature", True, (0, 0, 0))
+                question, True, (0, 0, 0))
             # TODO(nickbar01234) - Handle clip text
-            self.get_screen().blit(text_surface, (textbox.x + padding_x,
-                                                  textbox.y + textbox.height // 2 - padding_y))
+            self.get_screen().blit(text_surface, (question_box.x + padding_x,
+                                                  question_box.y + question_box.height // 2 - padding_y))
             pg.display.flip()
+
+            clock.tick(STYLE["fps"])
 
     def __add_question(self, question):
         self.questions.append(question)
+        print("Question added: ", question)
 
     def __create_add_question_box(self):
         pass

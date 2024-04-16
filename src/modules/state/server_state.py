@@ -52,7 +52,7 @@ cs_questions = [
     .build(),
 
     MultipleChoiceQuestionBuilder()
-    .add_question("What is the purpose of the "fork()" system call in Unix-like operating systems?")
+    .add_question("What is the purpose of the \"fork()\" system call in Unix-like operating systems?")
     .add_option("To create a new process")
     .add_option("To allocate memory for a new process")
     .add_option("To terminate a process")

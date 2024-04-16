@@ -1,7 +1,7 @@
 import logging
 import threading
 import pygame as pg
-from modules import SceneState, EntryScene, QuestionScene, NameScene, WaitScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE
+from modules import SceneState, EntryScene, AddQuestionScene,  QuestionScene, NameScene, WaitScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -19,7 +19,8 @@ class Client:
 
         SCENES = {
             # TODO: EntryScene can remove network -> get from player's self.state
-            SceneState.ENTRY: EntryScene(screen, self.state, self.network),
+            SceneState.ENTRY: AddQuestionScene(screen, self.state, self.network),
+            # SceneState.ENTRY: EntryScene(screen, self.state, self.network),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
 
             # Player scenes
