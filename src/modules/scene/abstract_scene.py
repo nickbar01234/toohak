@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 import sys
 import pygame as pg
-from ..state import PlayerState
+from ..state import ClientState
 from ..network.network import Network
 
 
 class AbstractScene(ABC):
-    def __init__(self, screen: pg.Surface, player_state: PlayerState, network: Network):
+    def __init__(self, screen: pg.Surface, client_state: ClientState, network: Network):
         self.__screen = screen
-        self.__player_state = player_state
+        self.__client_state = client_state
         self.__network = network
 
     @abstractmethod
@@ -20,8 +20,8 @@ class AbstractScene(ABC):
     def get_screen(self):
         return self.__screen
 
-    def get_player_state(self):
-        return self.__player_state
+    def get_client_state(self):
+        return self.__client_state
 
     def get_network(self):
         return self.__network

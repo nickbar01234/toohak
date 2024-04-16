@@ -1,7 +1,7 @@
 import logging
 import threading
 import pygame as pg
-from modules import SceneState, EntryScene, QuestionScene, NameScene, WaitScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE
+from modules import SceneState, EntryScene, QuestionScene, NameScene, WaitScene, QuitScene, ClientState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -10,7 +10,7 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 class Client:
     def __init__(self):
         self.network = Network()
-        self.state = PlayerState(self.network)
+        self.state = ClientState()
 
     def start(self):
         screen = pg.display.set_mode((STYLE["width"], STYLE["height"]))
@@ -21,17 +21,15 @@ class Client:
             # TODO: EntryScene can remove network -> get from player's self.state
             SceneState.ENTRY: EntryScene(screen, self.state, self.network),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
-
-            # Player scenes
-            SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network),
-            SceneState.PLAYER_WAIT: WaitScene(screen, self.state, self.network),
-            SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
-            SceneState.QUIT: QuitScene(screen, self.state, self.network),
+            SceneState.NAME: NameScene(screen, self.state, self.network),
 
             # Referee scenes
             SceneState.REFEREE_START_SCENE: RefreeStartScene(screen, self.state, self.network),
             SceneState.REFEREE_ADD_QUESTION: AddQuestionScene(screen, self.state, self.network),
             SceneState.REFEREE_MONITOR: MonitorScene(screen, self.state, self.network),
+
+            # TODO: player quit scene and monitor quit scenes?
+            SceneState.QUIT: QuitScene(screen, self.state, self.network),
         }
 
         music_thread = threading.Thread(target=self.music_thread, daemon=True)
@@ -45,11 +43,23 @@ class Client:
             logger.info("On scene %s", scene)
             scene = SCENES[scene].start_scene()
 
+            # player entry scene
+            if scene == SceneState.PLAYER_WAIT:
+                # change client state to player state
+                self.state = PlayerState(self.state)
+                SCENE[SceneState.PLAYER_WAIT] = WaitScene(
+                    screen, self.state, self.network)
+                SCENE[SceneState.PLAYER_QUESTION] = QuestionScene(
+                    screen, self.state, self.network)
+
     def listener(self):
         logger.info("Runing listener")
 
         # expect to release in role scene
         self.state.role_selection_barrier.acquire()
+
+        # expect to release in name scene
+        self.state.start_barrier.acquire()
 
         if self.state.get_is_player():
             self.player_role()
@@ -57,9 +67,6 @@ class Client:
             self.referee_role()
 
     def player_role(self):
-        # expect to release in name scene
-        self.state.player_start_barrier.acquire()
-
         logger.info("Waiting for questions")
         questions = self.network.receive_questions()
         self.state.set_questions(questions)
@@ -83,8 +90,7 @@ class Client:
 
     def referee_role(self):
         logger.info("Waiting for questions")
-        debug_sem = threading.Semaphore(0)
-        debug_sem.acquire()
+        self.state.start_barrier.acquire()
 
     def music_thread(self):
         pg.mixer.music.load("assets/music/toohak_song.mp3")

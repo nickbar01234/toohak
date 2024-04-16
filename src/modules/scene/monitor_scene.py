@@ -7,13 +7,19 @@ from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
 from . import utils
+from ..type.aliases import *
+from ..serializable import serializer as s
 
 
 class MonitorScene(AbstractScene):
     def start_scene(self):
+        self.leadersboard: LeadersBoard = []
+
         while True:
             for event in pg.event.get():
                 self.handle_quit(event)
+
+                # self.leadersboard = s.decode_leadersboard()
                 # match event.type:
                 #     case pg.MOUSEBUTTONDOWN:
                 #         if self.submit_box.collidepoint(event.pos):

@@ -1,6 +1,7 @@
 import sys
 import pygame
 import pyperclip
+
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
@@ -27,8 +28,8 @@ class NameScene(AbstractScene):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         self.get_network().send_name(name)
-                        self.get_player_state().player_start_barrier.release()
-                        return SceneState.PLAYER_WAIT
+                        self.get_client_state().start_barrier.release()
+                        return SceneState.PLAYER_WAIT if self.get_client_state().get_is_player() else SceneState.REFEREE_ADD_QUESTION
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         name = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:

@@ -10,5 +10,7 @@ Lock = threading.Lock
 PlayerProgress = list[bool]
 PlayerStates = dict[tuple[Socket, Addr],
                     tuple[Name, PlayerProgress, Lock, Lock]]
+RefereeStates = dict[tuple[Socket, Addr],
+                     tuple[Name, PlayerProgress, Lock, Lock]]
 LeadersBoard = list[tuple[Name, int]]
 Question = abstract_question.AbstractQuestion

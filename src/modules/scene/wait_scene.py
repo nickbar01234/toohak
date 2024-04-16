@@ -27,7 +27,7 @@ class WaitScene(AbstractScene):
         pg.display.flip()
 
         logger.info("Acquiring lock to start game")
-        self.get_player_state().game_starts.acquire()
+        self.get_client_state().game_starts.acquire()
         logger.info("Successfully acquired lock to start game")
 
         return SceneState.PLAYER_QUESTION

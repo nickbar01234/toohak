@@ -4,7 +4,6 @@ from time import sleep
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 # from ..state.player_state import PlayerState
 # from ..network import Network
@@ -19,8 +18,8 @@ class QuestionScene(AbstractScene):
     def start_scene(self):
         # Now initialize the questions when starting the scene
         self.q_idx = 0
-        self.num_questions = len(self.get_player_state().get_questions())
-        self.curr_question = self.get_player_state().get_questions()[0]
+        self.num_questions = len(self.get_client_state().get_questions())
+        self.curr_question = self.get_client_state().get_questions()[0]
         self.curr_options = self.curr_question.get_options()
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
@@ -52,7 +51,7 @@ class QuestionScene(AbstractScene):
 
             self.get_screen().fill("white")
             question_rect = self.curr_question.draw(self.get_screen())
-            for idx, (name, n_questions) in enumerate(self.get_player_state().get_leadersboard()):
+            for idx, (name, n_questions) in enumerate(self.get_client_state().get_leadersboard()):
                 text = STYLE["font"]["text"].render(
                     f"{name}: {n_questions}", True, (0, 0, 0))
                 text_rect = text.get_rect()
@@ -80,11 +79,11 @@ class QuestionScene(AbstractScene):
         print(f"Your solution is {self.selected}")
         correctness = self.curr_question.verify(user_solution)
         self.__draw_correctness(correctness)
-        self.get_player_state().set_progress(correctness)
+        self.get_client_state().set_progress(correctness)
 
         # send update to the server
         print("sending progress to server")
-        self.get_network().update_progress(self.get_player_state().get_progress())
+        self.get_network().update_progress(self.get_client_state().get_progress())
         print("sent to server")
 
         # update scene states
@@ -92,7 +91,7 @@ class QuestionScene(AbstractScene):
         if self.num_questions == self.q_idx:
             return False
 
-        self.curr_question = self.get_player_state().get_questions()[
+        self.curr_question = self.get_client_state().get_questions()[
             self.q_idx]
         self.curr_options = self.curr_question.get_options()
         self.selected = set()

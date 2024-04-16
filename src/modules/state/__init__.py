@@ -1,2 +1,2 @@
-from .player_state import PlayerState
+from .client_state import ClientState
 from .server_state import ServerState
