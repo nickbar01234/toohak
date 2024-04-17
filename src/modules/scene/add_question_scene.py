@@ -17,16 +17,9 @@ class AddQuestionScene(AbstractScene):
     def __init__(self, screen: pg.Surface, player_state, network):
         super().__init__(screen, player_state, network)
 
-        self.questions: list[Question] = []
-        self.question_description = ""
+        self.__clear_and_init()
         self.__create_submit_box()
         self.__create_add_box()
-
-        self.__question_prompt = PromptInput(
-            self.get_screen(), "Add question description: ")
-        self.__option_prompts: list[PromptInput] = [
-            PromptInput(self.get_screen(), "Option A: ", top_y=250)
-        ]
 
         self.senders: list[threading.Thread] = []
         # TODO: create a variable / way to store and prompt the solution!
@@ -44,27 +37,25 @@ class AddQuestionScene(AbstractScene):
                 _ = [p.handle_event(event) for p in self.__option_prompts]
 
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    # Finish and submit:
                     if self.submit_box.collidepoint(event.pos):
                         self.__collect_and_send_current_question()
 
-                        # wait for all senders to be done
+                        # wait for all senders to finish sending updates to the server
                         for sender in self.senders:
                             sender.join()
 
-                        # TODO: return the next SceneState here!!
+                        return SceneState.REFEREE_START_SCENE
 
                     elif self.add_box.collidepoint(event.pos):
                         self.__collect_and_send_current_question()
-
-                        # TODO: clear the current input and state & redraw!!!
+                        self.__clear_and_init()
 
             self.get_screen().fill("white")
             self.__draw_buttons()
 
             self.__question_prompt.draw()
             _ = [p.draw() for p in self.__option_prompts]
-            # TODO: draw more
+            # TODO: draw solution input
 
             pg.display.flip()
             clock.tick(STYLE["fps"])
@@ -75,7 +66,7 @@ class AddQuestionScene(AbstractScene):
     def __collect_and_send_current_question(self):
         question = self.__build_and_add_question()
 
-        sender = threading.Thread(target=self.sender, args=question)
+        sender = threading.Thread(target=self.__sender, args=[question])
         self.senders.append(sender)
         sender.start()
 
@@ -93,14 +84,11 @@ class AddQuestionScene(AbstractScene):
         # TODO: implement a user-friendly way to select the solution!!
 
         question = builder.build()
-
-        # Add to the question bank TODO: necessary?????????????
-        self.questions.append(question)
-
         return question
 
-    def __sender(question: Question):
-        pass  # TODO: IMPLEMENT SENDER
+    def __sender(self, question: Question):
+        print("Sending: ", str(question))
+        # TODO: IMPLEMENT SENDER
 
     #
     # UI drawing & rendering
@@ -108,17 +96,34 @@ class AddQuestionScene(AbstractScene):
 
     def __create_submit_box(self):
         self.submit_box, self.submit_box_text, self.submit_text_surface = self.get_utils().create_submit_box(
-            "Finish and Submit")
+            "Save & Finish")
 
     def __create_add_box(self):
         self.add_box, self.add_box_text, self.add_text_surface = self.get_utils().create_bottom_right_box(
-            "Add")
+            "Save & Add more")
 
     def __draw_buttons(self):
         self.get_utils().draw_submit_box(
-            self.submit_box, self.submit_box_text, self.submit_text_surface)
+            self.submit_box, self.submit_box_text, self.submit_text_surface, color='#af63fb')
         self.get_utils().draw_bottom_right_box(
             self.add_box, self.add_box_text, self.add_text_surface)
+
+    def __clear_and_init(self):
+        self.__question_prompt = PromptInput(
+            self.get_screen(), "Add question description: ")
+
+        left_x = self.get_screen().get_width() // 4
+        right_x = self.get_screen().get_width() // 4 * 3
+        self.__option_prompts: list[PromptInput] = [
+            PromptInput(self.get_screen(), "Option A: ",
+                        dimension=(512, 64), top_y=250, top_x=left_x),
+            PromptInput(self.get_screen(), "Option B: ",
+                        dimension=(512, 64), top_y=250, top_x=right_x),
+            PromptInput(self.get_screen(), "Option C: ",
+                        dimension=(512, 64), top_y=435, top_x=left_x),
+            PromptInput(self.get_screen(), "Option D: ",
+                        dimension=(512, 64), top_y=435, top_x=right_x),
+        ]
 
     def __submit(self):
         # logger.info("Referee submits questions")

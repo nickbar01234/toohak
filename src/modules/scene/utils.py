@@ -76,7 +76,7 @@ class Utils:
         dist_from_corner = STYLE["width"] // 40
         box_topright = STYLE["width"] - \
             dist_from_corner, dist_from_corner
-        width, height = STYLE["width"] // 6, STYLE["height"] // 13
+        width, height = STYLE["width"] // 7, STYLE["height"] // 13
         box = pg.Rect(0, 0, width, height)
         box.topright = box_topright
 
@@ -97,7 +97,7 @@ class Utils:
         dist_from_corner = STYLE["width"] // 40
         box_bottomright = STYLE["width"] - \
             dist_from_corner, STYLE["height"] - dist_from_corner
-        width, height = STYLE["width"] // 9, STYLE["height"] // 15
+        width, height = STYLE["width"] // 7, STYLE["height"] // 15
         box = pg.Rect(0, 0, width, height)
         box.bottomright = box_bottomright
 
