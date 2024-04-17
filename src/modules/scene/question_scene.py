@@ -24,7 +24,8 @@ class QuestionScene(AbstractScene):
         self.curr_options = self.curr_question.get_options()
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
-        self.submit_box = self.__create_submit_box()
+        self.submit_box, self.submit_box_text, self.submit_text_surface = self.get_utils(
+        ).create_submit_box()
 
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
@@ -61,12 +62,8 @@ class QuestionScene(AbstractScene):
                 text_rect = text_rect.move(0, question_rect.height + idx * 32)
                 self.get_screen().blit(text, text_rect)
 
-            # draw submit box
-            pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)
-            submit_text_surface = STYLE["font"]["text"].render(
-                "Submit", True, (0, 0, 0))
-            self.get_screen().blit(submit_text_surface, (self.submit_box.x + 10,
-                                                         self.submit_box.y + self.submit_box.height // 2 - 12))
+            self.get_utils().draw_submit_box(
+                self.submit_box, self.submit_box_text, self.submit_text_surface)
 
             # draw all options
             self.__draw_options()
@@ -122,15 +119,15 @@ class QuestionScene(AbstractScene):
             text_rect.center = box.center
             self.get_screen().blit(text_surface, text_rect)
 
-    def __create_submit_box(self):
-        dist_from_corner = STYLE["width"] // 40
-        box_topright = STYLE["width"] - \
-            dist_from_corner, dist_from_corner
-        width, height = STYLE["width"] // 15, STYLE["height"] // 15
-        box = pg.Rect(0, 0, width, height)
-        box.topright = box_topright
+    # def __create_submit_box(self):
+    #     dist_from_corner = STYLE["width"] // 40
+    #     box_topright = STYLE["width"] - \
+    #         dist_from_corner, dist_from_corner
+    #     width, height = STYLE["width"] // 15, STYLE["height"] // 15
+    #     box = pg.Rect(0, 0, width, height)
+    #     box.topright = box_topright
 
-        return box
+    #     return box
 
     def __create_options_boxes(self):
         boxes, box_borders = [], []

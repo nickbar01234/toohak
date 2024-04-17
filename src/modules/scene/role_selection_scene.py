@@ -2,13 +2,12 @@ import pygame
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from . import utils
 
 
 class RoleSelectionScene(AbstractScene):
     def start_scene(self):
-        referee_box = utils.create_button(self.get_screen(), (0, 0))
-        player_box = utils.create_button(self.get_screen(), (0, 100))
+        referee_box = self.get_utils().create_button((0, 0))
+        player_box = self.get_utils().create_button((0, 100))
 
         referee_box_highlight = False
         player_box_highlight = False
@@ -41,8 +40,8 @@ class RoleSelectionScene(AbstractScene):
 
             self.get_screen().fill("white")
 
-            utils.create_prompt(self.get_screen(
-            ), "Choose your role:", (0, self.get_screen().get_height() // 4))
+            self.get_utils().create_prompt(
+                "Choose your role:", (0, self.get_screen().get_height() // 4))
 
             for (box, border), content, highlight in zip([referee_box, player_box], ["Refree", "Player"], [referee_box_highlight, player_box_highlight]):
                 pygame.draw.rect(self.get_screen(), pygame.Color(

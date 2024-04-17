@@ -1,14 +1,12 @@
 import pygame as pg
 from .abstract_scene import AbstractScene
-from . import utils
 from .styles import STYLE
 from .scene_state import SceneState
 
 
 class RefreeStartScene(AbstractScene):
     def start_scene(self):
-        start_box, start_box_border = utils.create_button(
-            self.get_screen(), (0, 0))
+        start_box, start_box_border = self.get_utils().create_button((0, 0))
 
         while True:
             for event in pg.event.get():
@@ -19,8 +17,8 @@ class RefreeStartScene(AbstractScene):
                     return SceneState.REFEREE_MONITOR
 
             self.get_screen().fill("white")
-            utils.create_prompt(self.get_screen(),
-                                "Are you ready?", (0, self.get_screen().get_height() // 4))
+            self.get_utils().create_prompt(
+                "Are you ready?", (0, self.get_screen().get_height() // 4))
 
             pg.draw.rect(self.get_screen(), "black", start_box_border)
             pg.draw.rect(self.get_screen(), "white", start_box)

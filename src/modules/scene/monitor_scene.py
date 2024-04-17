@@ -6,7 +6,6 @@ import pyperclip
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from . import utils
 
 
 class MonitorScene(AbstractScene):
@@ -21,7 +20,5 @@ class MonitorScene(AbstractScene):
                 #             return SceneState.REFEREE_MONITOR
 
             self.get_screen().fill("red")
-            # utils.draw_submit_box(
-            #     self.get_screen(), "lightblue", self.submit_box)
             pg.display.flip()
             time.sleep(3)
