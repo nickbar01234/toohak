@@ -19,10 +19,13 @@ class MonitorScene(AbstractScene):
             self.logger.debug(f"Received leadersboard {
                               self.get_player_state().get_leadersboard()}")
 
-            # reference rect used to align leadersboard
-            center_rect = pg.Rect(
-                self.get_screen().get_rect().centerx - 1, 200, 2, 2)
+            text_surface = STYLE["font"]["title"].render(
+                "Monitoring Leaderboard...", True, (0, 0, 0))
+            screen_midtop = self.get_screen().get_rect().midtop
+            text_rect = text_surface.get_rect(
+                midtop=(screen_midtop[0], screen_midtop[1] + 200))
+            self.get_screen().blit(text_surface, text_rect)
 
             utils.draw_leadersboard(
-                self.get_screen(), self.get_player_state().get_leadersboard(), center_rect)
+                self.get_screen(), self.get_player_state().get_leadersboard(), text_rect)
             pg.display.flip()
