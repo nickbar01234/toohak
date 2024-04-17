@@ -4,6 +4,7 @@ import threading
 from modules import serializer as s
 from modules import ServerState
 from modules.type.aliases import *
+from modules.state.question_set import NUM_QUESTIONS
 
 logger = logging.getLogger()
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -134,7 +135,8 @@ class Server:
                 "Received defualts or define question decision."))
 
             # Referee chooses questions
-            if question_set == -1:
+            if question_set == NUM_QUESTIONS:
+                logger.info("Waiting for referee's self-defined questions.")
                 question_confirmed, new_question = s.decode_question_or_confirm(
                     referee_socket.recv(2048))
                 while not question_confirmed:
@@ -198,5 +200,5 @@ class Server:
 if __name__ == "__main__":
     hostname = socket.gethostname()
     IP = socket.gethostbyname_ex(hostname)[-1][-1]
-    PORT = 5555
+    PORT = 5556
     Server(IP, PORT).start()
