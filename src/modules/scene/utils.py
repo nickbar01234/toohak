@@ -1,5 +1,6 @@
 import pygame as pg
 from .styles import STYLE
+from ..type.aliases import *
 
 
 def create_prompt(screen: pg.Surface, prompt: str, margin: tuple[int, int]):
@@ -52,3 +53,15 @@ def draw_submit_box(screen: pg.Surface, color, submit_box: pg.Rect):
         "Start Game", True, (0, 0, 0))
     screen.blit(submit_text_surface, (submit_box.x + 10,
                                       submit_box.y + submit_box.height // 2 - 12))
+
+
+def draw_leadersboard(screen: pg.Surface, leadersboard: LeadersBoard, ref_rect: pg.Rect):
+    print(leadersboard)
+    for idx, (name, n_questions) in enumerate(leadersboard):
+        text = STYLE["font"]["text"].render(
+            f"{name}: {n_questions}", True, (0, 0, 0))
+        text_rect = text.get_rect()
+        text_rect.midtop = ref_rect.midbottom
+        text_rect.top = ref_rect.bottom
+        text_rect = text_rect.move(0, ref_rect.height + idx * 32)
+        screen.blit(text, text_rect)

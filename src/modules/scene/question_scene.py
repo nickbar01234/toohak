@@ -6,6 +6,7 @@ from .scene_state import SceneState
 from .styles import STYLE
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
+from . import utils
 # from ..state.player_state import PlayerState
 # from ..network import Network
 
@@ -52,14 +53,8 @@ class QuestionScene(AbstractScene):
 
             self.get_screen().fill("white")
             question_rect = self.curr_question.draw(self.get_screen())
-            for idx, (name, n_questions) in enumerate(self.get_player_state().get_leadersboard()):
-                text = STYLE["font"]["text"].render(
-                    f"{name}: {n_questions}", True, (0, 0, 0))
-                text_rect = text.get_rect()
-                text_rect.midtop = question_rect.midbottom
-                text_rect.top = question_rect.bottom
-                text_rect = text_rect.move(0, question_rect.height + idx * 32)
-                self.get_screen().blit(text, text_rect)
+            utils.draw_leadersboard(
+                self.get_screen(), self.get_player_state().get_leadersboard(), question_rect)
 
             # draw submit box
             pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)

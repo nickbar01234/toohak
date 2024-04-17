@@ -14,14 +14,8 @@ class MonitorScene(AbstractScene):
         while True:
             for event in pg.event.get():
                 self.handle_quit(event)
-                # match event.type:
-                #     case pg.MOUSEBUTTONDOWN:
-                #         if self.submit_box.collidepoint(event.pos):
-                #             self.__submit()
-                #             return SceneState.REFEREE_MONITOR
 
-            self.get_screen().fill("red")
-            # utils.draw_submit_box(
-            #     self.get_screen(), "lightblue", self.submit_box)
+            self.get_screen().fill("lightgreen")
+            utils.draw_leadersboard(
+                self.get_screen(), self.get_player_state().get_leadersboard(), self.get_screen().get_rect())
             pg.display.flip()
-            time.sleep(3)
