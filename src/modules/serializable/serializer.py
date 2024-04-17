@@ -22,6 +22,7 @@ ROLE = 'role'
 NAME = 'name'
 SUCCESS = 'success'
 START = 'start'
+SET = 'set'
 QUESTION = 'question'
 QUESTIONS = 'questions'
 CONFIRM = 'confirm'  # referee confirm on the question set
@@ -114,6 +115,14 @@ def decode_role_response(data: bytes) -> bool:
 #
 # Message Protocol for distributing questions
 #
+
+
+def encode_defaults_or_define_questions(idx: int):
+    return encode(SET, idx)
+
+
+def decode_defaults_or_define_questions(data: bytes) -> int:
+    return decode(data, SET)
 
 
 def encode_question(question: Question):

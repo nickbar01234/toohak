@@ -30,9 +30,7 @@ class AddQuestionScene(AbstractScene):
         clock = pg.time.Clock()
         while True:
             for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit(0)
+                self.handle_quit(event)
 
                 self.__question_prompt.handle_event(event)
                 _ = [p.handle_event(event) for p in self.__option_prompts]

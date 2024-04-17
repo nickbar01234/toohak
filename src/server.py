@@ -128,19 +128,26 @@ class Server:
                 "Referee thread started to listen from %s", referee_addr)
 
             # TODO: Add a scene to use the default question set!! For now we always need the referee to manually add all questions
+            question_set = s.decode_defaults_or_define_questions(
+                referee_socket.recv(256))
+            referee_socket.sendall(s.encode_ack(
+                "Received defualts or define question decision."))
 
             # Referee chooses questions
-            question_confirmed, new_question = s.decode_question_or_confirm(
-                referee_socket.recv(2048))
-            while not question_confirmed:
-                referee_socket.sendall(s.encode_ack(
-                    "Referee's question received"))
-                self.__state.add_question(new_question)
+            if question_set == -1:
                 question_confirmed, new_question = s.decode_question_or_confirm(
                     referee_socket.recv(2048))
+                while not question_confirmed:
+                    referee_socket.sendall(s.encode_ack(
+                        "Referee's question received"))
+                    self.__state.add_question(new_question)
+                    question_confirmed, new_question = s.decode_question_or_confirm(
+                        referee_socket.recv(2048))
 
-            referee_socket.sendall(s.encode_ack(
-                "Referee's confirmatino on questions received"))
+                referee_socket.sendall(s.encode_ack(
+                    "Referee's confirmatino on questions received"))
+            else:
+                self.__state.choose_question_set(question_set)
 
             # Referee choose to start game
             s.decode_referee_startgame(referee_socket.recv(1024))

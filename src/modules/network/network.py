@@ -81,6 +81,13 @@ class Network:
     # Referee Protocols
     #
 
+    def choose_default_or_customized(self, idx: int):
+        self.client.sendall(s.encode_defaults_or_define_questions(idx))
+        self.client.settimeout(5)
+        s.decode_ack(self.client.recv(1024))
+        logger.info(
+            "Sent to server choosing questions set (-1 meaning self-defined): %d", idx)
+
     def send_question(self, question: Question):
         with self.client_lock:
             logger.debug("Sending question")

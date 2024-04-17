@@ -11,6 +11,8 @@ class SceneState(Enum):
     PLAYER_QUESTION = auto()  # Quiz in progress
     PLAYER_END = auto()  # Final result
 
+    # Referee chooses whether to use default question sets or define their own
+    REFEREE_CHOOSE_QUESTION_SET = auto()
     REFEREE_ADD_QUESTION = auto()  # Referee adds questions to question bank
     REFEREE_START_SCENE = auto()
     REFEREE_MONITOR = auto()  # Referee's view
