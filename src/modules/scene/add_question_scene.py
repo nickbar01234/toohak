@@ -8,8 +8,9 @@ from .prompt_input_box import PromptInput
 from ..type.aliases import *
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
-# from ..state.player_state import PlayerState
-# from ..network import Network
+
+# TODO: implement a choice to opt for the default question set
+# TODO: review all questions added?
 
 
 class AddQuestionScene(AbstractScene):
@@ -43,6 +44,7 @@ class AddQuestionScene(AbstractScene):
                         # wait for all senders to finish sending updates to the server
                         for sender in self.senders:
                             sender.join()
+                        self.get_network().send_confirm()  # sync
 
                         return SceneState.REFEREE_START_SCENE
 
@@ -66,7 +68,8 @@ class AddQuestionScene(AbstractScene):
     def __collect_and_send_current_question(self):
         question = self.__build_and_add_question()
 
-        sender = threading.Thread(target=self.__sender, args=[question])
+        sender = threading.Thread(
+            target=self.get_network().send_question, args=[question])
         self.senders.append(sender)
         sender.start()
 
@@ -80,15 +83,11 @@ class AddQuestionScene(AbstractScene):
                 option_prompt.get_content())
 
         builder = builder.add_solution(
-            MultipleChoiceSolutionBuilder().add_solution("TODO - THIS IS A PLACE HOLDER"))
+            MultipleChoiceSolutionBuilder().add_solution("TODO - THIS IS A PLACE HOLDER").build())
         # TODO: implement a user-friendly way to select the solution!!
 
         question = builder.build()
         return question
-
-    def __sender(self, question: Question):
-        print("Sending: ", str(question))
-        # TODO: IMPLEMENT SENDER
 
     #
     # UI drawing & rendering

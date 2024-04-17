@@ -147,7 +147,8 @@ class ServerState:
         # for now: will be initialized after the playerCount is finalized
         self.__game_ends = None
 
-        self.__questions = questions  # TODO: change later to receive from the referee
+        # TODO: change later to receive from the referee: default / customized
+        self.__questions = []
         self.__questions_lock = threading.Lock()
 
     def get_server_addr(self):
@@ -234,6 +235,11 @@ class ServerState:
     def get_questions(self):
         with self.__questions_lock:
             return self.__questions
+
+    def add_question(self, new_question):  # for referee
+        with self.__questions_lock:
+            self.__questions.append(new_question)
+            logger.info("Question appended to the set: %s", new_question)
 
     def set_questions(self, new_questions):
         with self.__questions_lock:

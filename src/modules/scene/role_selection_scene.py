@@ -30,7 +30,7 @@ class RoleSelectionScene(AbstractScene):
                     self.get_network().send_role("referee")
                     self.get_player_state().set_is_player(False)
                     self.get_player_state().role_selection_barrier.release()
-                    return SceneState.REFEREE_START_SCENE
+                    return SceneState.REFEREE_ADD_QUESTION
 
                 if event.type == pygame.MOUSEBUTTONDOWN and player_box[0].collidepoint(event.pos):
                     self.get_network().send_role("player")

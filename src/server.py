@@ -82,17 +82,11 @@ class Server:
                 "Listener thread started to listen from %s", player_addr)
 
             # finalize establishing connection by receiving player's name
-            # may raise InvalidMessage exception
-
             player_name = self.receive_player_name(player_socket, player_lock)
-            # player_name = s.decode_name(player_socket.recv(2048))
-            # with player_lock:
-            #     player_socket.sendall(s.encode_name_response())
-
             self.__state.add_player(
                 player_socket, player_addr, player_name, player_lock)
 
-            # Wait for game starts TODO: does the listender thread need to block until game starts? maybe not?
+            # Wait for game starts
             self.__state.player_wait_start_game(socket_addr)
 
             for _ in range(len(self.__state.get_questions())):
@@ -133,6 +127,22 @@ class Server:
             logger.info(
                 "Referee thread started to listen from %s", referee_addr)
 
+            # TODO: Add a scene to use the default question set!! For now we always need the referee to manually add all questions
+
+            # Referee chooses questions
+            question_confirmed, new_question = s.decode_question_or_confirm(
+                referee_socket.recv(2048))
+            while not question_confirmed:
+                referee_socket.sendall(s.encode_ack(
+                    "Referee's question received"))
+                self.__state.add_question(new_question)
+                question_confirmed, new_question = s.decode_question_or_confirm(
+                    referee_socket.recv(2048))
+
+            referee_socket.sendall(s.encode_ack(
+                "Referee's confirmatino on questions received"))
+
+            # Referee choose to start game
             s.decode_referee_startgame(referee_socket.recv(1024))
             self.__state.signal_game_start()
 

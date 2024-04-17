@@ -22,7 +22,9 @@ ROLE = 'role'
 NAME = 'name'
 SUCCESS = 'success'
 START = 'start'
+QUESTION = 'question'
 QUESTIONS = 'questions'
+CONFIRM = 'confirm'  # referee confirm on the question set
 ACK = 'ack'
 LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
@@ -114,6 +116,14 @@ def decode_role_response(data: bytes) -> bool:
 #
 
 
+def encode_question(question: Question):
+    return encode(QUESTION, question)
+
+
+def decode_question(data: bytes) -> Question:
+    return decode(data, QUESTION)
+
+
 def encode_questions(questions: list[Question]):
     return encode(QUESTIONS, questions)
 
@@ -129,6 +139,9 @@ def encode_ack(for_action: str):
 def decode_ack(data: bytes):
     return decode(data, ACK)
 
+
+def encode_confirm_questions():
+    return encode(CONFIRM, "questions")
 #
 # Message Protocol for server to signal players game start
 #
@@ -197,6 +210,22 @@ def decode_update_or_endgame(data: bytes) -> tuple[bool, LeadersBoard]:
                 f"Received message unrecognized / not for the current phase: {msg}")
             raise InvalidMessageError
 
+# the boolean in the tuple indicates whether referee confirms on the current question set or not
+
+
+def decode_question_or_confirm(data: bytes) -> tuple[bool, Question]:
+    decoded = pickle.loads(data)
+    match decoded:
+        case {'action': action, 'msg': msg} if action == QUESTION:
+            logger.debug("Decoded question: %s", msg)
+            return (False, msg)
+        case {'action': action, 'msg': msg} if action == CONFIRM:
+            logger.debug("Decoded confirmation on the question set")
+            return (True, None)
+        case msg:
+            logger.error(
+                "Received message unrecognized / not for the current phase: %s", msg)
+            raise InvalidMessageError
 
 #
 # Message Protocol for players to notify the server they're leaving

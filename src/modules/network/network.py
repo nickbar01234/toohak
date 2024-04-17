@@ -13,6 +13,9 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # socket access is not thread-safe between client's main thread and listener thread
 
+        # for referee's senders when trying to send questions at around the same time
+        self.client_lock = threading.Lock()
+
     def connect(self, ip: str):
         logger.info("Connecting to %s", ip)
         host, port = ip.split(":")
@@ -73,3 +76,21 @@ class Network:
 
     def send_signal_start_game(self):
         self.client.sendall(s.encode_referee_startgame())
+
+    #
+    # Referee Protocols
+    #
+
+    def send_question(self, question: Question):
+        with self.client_lock:
+            logger.debug("Sending question")
+            self.client.sendall(s.encode_question(question))
+            self.client.settimeout(10)
+            s.decode_ack(self.client.recv(1024))
+            logger.info("Question sent to the server: %s", question)
+
+    def send_confirm(self):
+        self.client.sendall(s.encode_confirm_questions())
+        self.client.settimeout(5)
+        s.decode_ack(self.client.recv(1024))
+        logger.info("Question Confirmation sent to the server")
