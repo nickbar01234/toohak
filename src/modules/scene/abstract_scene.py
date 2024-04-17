@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import sys
 import pygame as pg
+from .utils import Utils
 from ..state import PlayerState
 from ..network.network import Network
 
@@ -10,6 +11,7 @@ class AbstractScene(ABC):
         self.__screen = screen
         self.__player_state = player_state
         self.__network = network
+        self.__utils = Utils(self.__screen)
 
     @abstractmethod
     def start_scene(self):
@@ -32,3 +34,6 @@ class AbstractScene(ABC):
                 self.get_network().disconnect()
                 pg.quit()
                 sys.exit(0)
+
+    def get_utils(self):
+        return self.__utils

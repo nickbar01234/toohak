@@ -6,6 +6,7 @@ class Utils:
     def __init__(self, screen: pg.Surface):
         self.screen = screen
 
+    # old - deprecating
     def create_prompt(self,
                       prompt: str,
                       margin: tuple[int, int],
@@ -15,9 +16,9 @@ class Utils:
         rect = text.get_rect()
         rect.midtop = self.screen.get_rect().midtop
         rect = rect.move(*margin)
-        # rect.midtop = (self.screen.get_width() // 2, 20)
         self.screen.blit(text, rect)
 
+    # new - create the prompt and input box together
     def create_prompt_with_inputbox(self,
                                     prompt: str = "Add question description",
                                     dimension: tuple[int, int] = (512, 64),
@@ -43,17 +44,15 @@ class Utils:
     def draw_prompt_with_inputbox(self, active, filled):
         self.screen.blit(*self.prompt)
 
-        pg.draw.rect(self.get_screen(), pg.Color("#00FF00")
-                     if filled else pg.Color("#8489FBFF") if active else "black", self.question_box_border)
+        pg.draw.rect(self.get_screen(),
+                     pg.Color("#00FF00") if filled
+                     else pg.Color("#8489FBFF") if active
+                     else "black", self.question_box_border)
         pg.draw.rect(self.get_screen(), "white", self.question_box)
 
-    def create_textbox(self,
-                       dimension: tuple[int, int] = (512, 64),
-                       border: int = 3,
-                       distance_to_top: int = 0):
+    def create_textbox(self, dimension: tuple[int, int] = (512, 64), border: int = 3):
         textbox_border = pg.Rect(0, 0, *dimension)
         textbox_border.center = self.screen.get_rect().center
-        textbox_border.top = self.screen.get_rect().top + distance_to_top
         left_x, left_y = textbox_border.topleft
         textbox = pg.Rect(
             0, 0, dimension[0] - border * 2, dimension[1] - border * 2)

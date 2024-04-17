@@ -4,7 +4,6 @@ from time import sleep
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from . import utils
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 # from ..state.player_state import PlayerState
@@ -25,7 +24,8 @@ class QuestionScene(AbstractScene):
         self.curr_options = self.curr_question.get_options()
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
-        self.submit_box, self.submit_box_text = utils.create_submit_box()
+        self.submit_box, self.submit_box_text, self.submit_text_surface = self.get_utils(
+        ).create_submit_box()
 
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
@@ -62,8 +62,8 @@ class QuestionScene(AbstractScene):
                 text_rect = text_rect.move(0, question_rect.height + idx * 32)
                 self.get_screen().blit(text, text_rect)
 
-            utils.draw_submit_box(
-                self.get_screen(), self.submit_box, self.submit_box_text)
+            self.get_utils().draw_submit_box(
+                self.submit_box, self.submit_box_text, self.submit_text_surface)
 
             # draw all options
             self.__draw_options()

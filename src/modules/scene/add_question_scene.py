@@ -17,7 +17,6 @@ class AddQuestionScene(AbstractScene):
 
         self.questions: list[Question] = []
         self.question_description = ""
-        self.utils = Utils(self.get_screen())
         self.__create_submit_box()
         self.__create_add_box()
         self.__create_prompt_with_inputbox()
@@ -46,7 +45,7 @@ class AddQuestionScene(AbstractScene):
 
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_RETURN:
-                        print("Question added: ", question)
+                        print("Question added: ", self.question_description)
                         filled = True
                     elif event.key == pg.K_v and (event.mod & pg.KMOD_CTRL or event.mod & pg.KMOD_META):
                         self.question_description = pyperclip.paste()
@@ -82,7 +81,7 @@ class AddQuestionScene(AbstractScene):
     #
 
     def __create_prompt_with_inputbox(self):
-        self.prompt, self.question_box, self.question_box_border = self.utils.create_prompt_with_inputbox(
+        self.prompt, self.question_box, self.question_box_border = self.get_utils().create_prompt_with_inputbox(
             "Add question description: ", (768, 64), font_style="question")
 
     def __draw_question_prompt(self, active: bool, filled: bool):
@@ -93,17 +92,17 @@ class AddQuestionScene(AbstractScene):
         pg.draw.rect(self.get_screen(), "white", self.question_box)
 
     def __create_submit_box(self):
-        self.submit_box, self.submit_box_text, self.submit_text_surface = self.utils.create_submit_box(
+        self.submit_box, self.submit_box_text, self.submit_text_surface = self.get_utils().create_submit_box(
             "Finish and Submit")
 
     def __create_add_box(self):
-        self.add_box, self.add_box_text, self.add_text_surface = self.utils.create_bottom_right_box(
+        self.add_box, self.add_box_text, self.add_text_surface = self.get_utils().create_bottom_right_box(
             "Add")
 
     def __draw_buttons(self):
-        self.utils.draw_submit_box(
+        self.get_utils().draw_submit_box(
             self.submit_box, self.submit_box_text, self.submit_text_surface)
-        self.utils.draw_bottom_right_box(
+        self.get_utils().draw_bottom_right_box(
             self.add_box, self.add_box_text, self.add_text_surface)
 
     def __submit(self):

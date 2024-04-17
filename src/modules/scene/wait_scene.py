@@ -4,7 +4,6 @@ import pygame as pg
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from . import utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -14,7 +13,7 @@ class WaitScene(AbstractScene):
     def start_scene(self):
         self.get_screen().fill("white")
 
-        textbox, textbox_border = utils.create_textbox(self.get_screen())
+        textbox, textbox_border = self.get_utils().create_textbox()
         pg.draw.rect(self.get_screen(), "black", textbox_border)
         pg.draw.rect(self.get_screen(), "white", textbox)
 
