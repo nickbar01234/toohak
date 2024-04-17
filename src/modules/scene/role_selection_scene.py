@@ -75,7 +75,7 @@ class RoleSelectionScene(AbstractScene):
 
     def display_bad_selection_msg(self):
         self.get_screen().fill("beige")
-        text_surface = STYLE["font"]["title"].render(
+        text_surface = STYLE["font"]["question"].render(
             "Too late! Referee has been selected by another player, you will be a player", True, (0, 0, 0))
         # TODO(nickbar01234) - Handle clip text
         text_rect = text_surface.get_rect(

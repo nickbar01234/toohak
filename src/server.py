@@ -50,10 +50,13 @@ class Server:
             self.__state.get_questions()))
 
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
-        init_top5players = [(n, 0)
-                            for n in self.__state.get_all_player_names()[:5]]
+        self.__state.init_leadersboard()
+        init_top5players = self.__state.get_top5()
         self.broadcast_with_ack(
             "game starts", s.encode_startgame(init_top5players))
+
+        # Send initialized full leadersboard to referee
+        self.send_full_leadersboard()
 
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
@@ -198,11 +201,11 @@ class Server:
                     "Async - Broadcasted {%s} to Player {%s}", summary, name)
 
     def send_full_leadersboard(self):
-        # with self.__state.referee_lock:
         logger.debug(
             f"Full leaderboard is {self.__state.get_leadersboard()}")
-        self.__state.get_referee()[0].sendall(
-            self.__state.get_leadersboard())
+        with self.__state.referee_lock:
+            self.__state.get_referee()[0].sendall(s.encode_leadersboard(
+                self.__state.get_leadersboard()))
         logger.info("Sent leadersboard to Referee")
 
     def receive_player_name(self, player_socket: socket, player_lock: threading.Lock):
@@ -211,7 +214,7 @@ class Server:
         with player_lock:
             player_socket.sendall(s.encode_name_response())
 
-        return player_name
+            return player_name
 
 
 if __name__ == "__main__":

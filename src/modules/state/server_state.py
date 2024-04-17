@@ -82,7 +82,7 @@ class ServerState:
         return self.__referee
 
     def set_referee(self, socket_addr: SocketAddr):
-        self.__referee = SocketAddr
+        self.__referee = socket_addr
 
     def remove_referee(self):
         with self.referee_lock:
@@ -121,6 +121,9 @@ class ServerState:
             self.__leadersboard = sorted(name_progress_list,
                                          key=lambda x: x[1], reverse=True)
         logger.debug(f"Updating leaderboard to {self.__leadersboard}")
+
+    def init_leadersboard(self):
+        self.__leadersboard = [(n, 0) for n in self.get_all_player_names()]
 
     def get_leadersboard(self):
         return self.__leadersboard

@@ -85,8 +85,18 @@ class Client:
 
     def referee_role(self):
         logger.info("Waiting for questions")
-        debug_sem = threading.Semaphore(0)
-        debug_sem.acquire()
+        init_leadersboard = self.network.receive_leadersboard()
+        self.state.set_leadersboard(init_leadersboard)
+
+        game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+        while game_continues:
+            self.state.set_leadersboard(leadersboard)
+            logger.info(
+                "Leader's board updated: {%s}", self.state.get_leadersboard())
+            game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+
+        self.network.block_until_game_ends()
+        logger.info("Received update from server: Game ends")
 
     def music_thread(self):
         pg.mixer.music.load("assets/music/toohak_song.mp3")

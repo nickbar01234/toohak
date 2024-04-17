@@ -56,7 +56,6 @@ def draw_submit_box(screen: pg.Surface, color, submit_box: pg.Rect):
 
 
 def draw_leadersboard(screen: pg.Surface, leadersboard: LeadersBoard, ref_rect: pg.Rect):
-    print(leadersboard)
     for idx, (name, n_questions) in enumerate(leadersboard):
         text = STYLE["font"]["text"].render(
             f"{name}: {n_questions}", True, (0, 0, 0))

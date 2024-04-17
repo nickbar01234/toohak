@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import sys
+import logging
 import pygame as pg
 from ..state import PlayerState
 from ..network.network import Network
@@ -10,6 +11,8 @@ class AbstractScene(ABC):
         self.__screen = screen
         self.__player_state = player_state
         self.__network = network
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
     @abstractmethod
     def start_scene(self):
