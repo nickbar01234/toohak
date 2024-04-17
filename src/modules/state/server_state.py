@@ -33,12 +33,16 @@ class ServerState:
     def __init__(self, ip, port):
         self.__addr = (ip, port)
 
-        self.__referee_sockets_lock = threading.Lock()
-        self.__referee_sockets = []
+        # referee states
+        self.referee_lock = threading.Lock()
+        self.__referee: SocketAddr = None
 
         # players states
         self.__player_states_lock = threading.Lock()  # guard both states and top5
         self.__player_states: PlayerStates = {}
+
+        # leadersboard states
+        self.__leadersboard: LeadersBoard = []
         self.__top5players: LeadersBoard = []
 
         # only main thread should access
@@ -74,6 +78,16 @@ class ServerState:
                 del self.__player_states[socket_addr]
         logger.info("Removed connection from %s", socket_addr)
 
+    def get_referee(self):
+        return self.__referee
+
+    def set_referee(self, socket_addr: SocketAddr):
+        self.__referee = SocketAddr
+
+    def remove_referee(self):
+        with self.referee_lock:
+            self.__referee = None
+
     def player_wait_start_game(self, socket_addr: SocketAddr):
         player = None
         with self.__player_states_lock:
@@ -96,8 +110,30 @@ class ServerState:
             self.__player_states[socket_addr] = name, new_progress, lock, game_start_lock
             logger.info(
                 "Player {%s} progress has been updated: %s", name, new_progress)
+        self.__update_leadersboard()
 
     # Return the updated top5players if there's a non-trivial update, otherwise return None
+    def __update_leadersboard(self):
+        logger.debug(f"Updating leaderboard from {self.__leadersboard}")
+        with self.__player_states_lock:
+            name_progress_list = [(n, len(p))
+                                  for n, p, l, _ in list(self.__player_states.values())]
+            self.__leadersboard = sorted(name_progress_list,
+                                         key=lambda x: x[1], reverse=True)
+        logger.debug(f"Updating leaderboard to {self.__leadersboard}")
+
+    def get_leadersboard(self):
+        return self.__leadersboard
+
+    def get_top5(self):
+        new_top5 = self.__leadersboard[:5]
+        logger.debug("The new top5 players are %s", new_top5)
+
+        if new_top5 != self.__top5players:
+            self.__top5players = new_top5
+            return new_top5
+        return None
+
     def update_top5(self):
         with self.__player_states_lock:
             name_progress_list = [(n, len(p))

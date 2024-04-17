@@ -26,7 +26,7 @@ class AddQuestionScene(AbstractScene):
                         # submit
                         if self.submit_box.collidepoint(event.pos):
                             self.__submit()
-                            return SceneState.REFEREE_MONITOR
+                            return SceneState.REFEREE_START_SCENE
 
                         # add question
                         # if self.add_question_box.collidepoint(event.pos):

@@ -50,6 +50,8 @@ class Client:
 
         # expect to release in role scene
         self.state.role_selection_barrier.acquire()
+        role = "player" if self.state.get_is_player() else "referee"
+        logger.info(f"Finished selecting role, selected {role}")
 
         if self.state.get_is_player():
             self.player_role()
@@ -88,7 +90,7 @@ class Client:
 
     def music_thread(self):
         pg.mixer.music.load("assets/music/toohak_song.mp3")
-        pg.mixer.music.play(loops=-1)
+        # pg.mixer.music.play(loops=-1)
 
 
 if __name__ == "__main__":

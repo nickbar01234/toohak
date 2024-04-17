@@ -21,6 +21,7 @@ CONNECT = 'connect'
 ROLE = 'role'
 NAME = 'name'
 SUCCESS = 'success'
+FAILURE = 'failure'
 START = 'start'
 QUESTIONS = 'questions'
 ACK = 'ack'
@@ -49,7 +50,7 @@ def decode(data: bytes, action: str):
             return msg
         case msg:
             logger.error(
-                "Received message unrecognized / not for the current phase: %s", msg)
+                "Received message unrecognized / not for the current phase: %s, expecting %s", msg, action)
             raise InvalidMessageError
 
 
@@ -102,8 +103,8 @@ def decode_role(data: bytes) -> game_role:
     return decode(data, ROLE)
 
 
-def encode_role_response():
-    return encode(ROLE, SUCCESS)
+def encode_role_response(status):
+    return encode(ROLE, status)
 
 
 def decode_role_response(data: bytes) -> bool:
