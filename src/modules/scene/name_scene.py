@@ -27,7 +27,7 @@ class NameScene(AbstractScene):
                     if event.key == pygame.K_RETURN:
                         self.get_network().send_name(name)
                         self.get_player_state().player_start_barrier.release()
-                        return SceneState.PLAYER_WAIT
+                        return SceneState.PLAYER_WAIT_START_ROOM
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         name = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:
