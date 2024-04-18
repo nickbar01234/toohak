@@ -41,6 +41,7 @@ class Server:
 
     # TODO: tell referee to quit when game ends
     def game_starter_thread(self):
+        # TODO(nickbar01234) - Restart game thread to play another round?
         logger.info("Thread started to monitor the game_starting state.")
 
         self.__state.wait_game_start()
@@ -60,6 +61,10 @@ class Server:
 
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
+
+        self.__state.wait_end()
+        self.broadcast_without_ack("Broadcasting final results", s.encode_endgame(
+            self.__state.get_final_results()))
 
     def listener(self, client: socket.socket, addr):
         try:
@@ -90,67 +95,48 @@ class Server:
                     return self.player_listener(client, addr)
                 case "referee":
                     return self.referee_listener(client, addr)
-        finally:
-            client.close()
+        except Exception as _:
+            logger.info("Lost connection with %s", (client, addr))
+            self.__state.remove_player((client, addr))
 
     # For each listener's thread to receive message form a specific player
 
     def player_listener(self, player_socket: Socket, player_addr: Addr):
         socket_addr = (player_socket, player_addr)
         player_lock = threading.Lock()
-        try:
-            logger.info(
-                "Player thread started to listen from %s", player_addr)
+        logger.info(
+            "Listener thread started to listen from %s", player_addr)
 
-            # finalize establishing connection by receiving player's name
-            # may raise InvalidMessage exception
+        # finalize establishing connection by receiving player's name
+        # may raise InvalidMessage exception
 
-            player_name = self.receive_player_name(player_socket, player_lock)
-            # player_name = s.decode_name(player_socket.recv(2048))
-            # with player_lock:
-            #     player_socket.sendall(s.encode_name_response())
+        player_name = self.receive_player_name(player_socket, player_lock)
+        # player_name = s.decode_name(player_socket.recv(2048))
+        # with player_lock:
+        #     player_socket.sendall(s.encode_name_response())
 
-            self.__state.add_player(
-                player_socket, player_addr, player_name, player_lock)
+        self.__state.add_player(
+            player_socket, player_addr, player_name, player_lock)
 
-            # Wait for game starts TODO: does the listender thread need to block until game starts? maybe not?
-            self.__state.player_wait_start_game(socket_addr)
+        # Wait for game starts TODO: does the listender thread need to block until game starts? maybe not?
+        self.__state.player_wait_start_game(socket_addr)
 
-            for _ in range(len(self.__state.get_questions())):
-                logger.debug(
-                    "Waiting to receive update from the player %s", player_name)
-                progress = s.decode_progress(player_socket.recv(2048))
-                logger.info("Receive %s from %s", progress, player_name)
-                self.__state.update_player_progress(socket_addr, progress)
-                # if (top5 := self.__state.update_top5()):
-                if (top5 := self.__state.get_top5()):
-                    logger.debug("Sending updated top 5")
-                    self.broadcast_without_ack(
-                        "new top5", s.encode_leadersboard(top5))
-                self.send_full_leadersboard()
+        for _ in range(len(self.__state.get_questions())):
+            logger.debug(
+                "Waiting to receive update from the player %s", player_name)
+            progress = s.decode_progress(player_socket.recv(2048))
+            logger.info("Receive %s from %s", progress, player_name)
+            self.__state.update_player_progress(socket_addr, progress)
+            # if (top5 := self.__state.update_top5()):
+            if (top5 := self.__state.get_top5()):
+                logger.debug("Sending updated top 5")
+                self.broadcast_without_ack(
+                    "new top5", s.encode_leadersboard(top5))
+            self.send_full_leadersboard()
 
-            # # Players have finished all the questions
-            # logger.info(
-            #     f"Player {player_name, player_addr} has finished all the questions")
-
-            # # Game ends
-            # i = self.__gameEnds.wait()
-            # if i == 0:  # only one player needs to broadcast a message & log
-            #     self.broadcast("game ends", s.encode_le)
-            #     logger.info(f"Game ends: all players finished")
-
-            # # TODO: how long does the player stay connected here (auto exit timeout?)
-            # player_socket.settimeout(120)  # auto log out after 2 min
-            # s.decode_leave(player_socket.recv(1024))
-            # logger.info(
-            #     f"Player {player_name, player_addr} left. Listener threading exiting..")
-        except Exception as e:
-            print(e)
-            information = self.__state.get_socket_addr(socket_addr)
-            logger.error("Lost the connection with %s", information)
-        finally:
-            logger.info("Disconnecting %s", socket_addr)
-            self.__state.remove_player(socket_addr)
+        elapsed_time = s.decode_elapse_time(player_socket.recv(1024))
+        self.__state.update_end_results(socket_addr, elapsed_time)
+        self.__state.signal_end()
 
     def referee_listener(self, referee_socket: socket.socket, referee_addr):
         socket_addr = (referee_socket, referee_addr)
@@ -201,8 +187,8 @@ class Server:
                     "Async - Broadcasted {%s} to Player {%s}", summary, name)
 
     def send_full_leadersboard(self):
-        logger.debug(
-            f"Full leaderboard is {self.__state.get_leadersboard()}")
+        logger.debug("Full leaderboard is %s", {
+                     self.__state.get_leadersboard()})
         with self.__state.referee_lock:
             self.__state.get_referee()[0].sendall(s.encode_leadersboard(
                 self.__state.get_leadersboard()))

@@ -4,7 +4,6 @@ import pyperclip
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from . import utils
 
 
 class NameScene(AbstractScene):
@@ -14,7 +13,7 @@ class NameScene(AbstractScene):
         name = ""
         active = False
         while True:
-            textbox, textbox_border = utils.create_textbox(self.get_screen())
+            textbox, textbox_border = self.get_utils().create_textbox()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -28,7 +27,7 @@ class NameScene(AbstractScene):
                     if event.key == pygame.K_RETURN:
                         self.get_network().send_name(name)
                         self.get_player_state().player_start_barrier.release()
-                        return SceneState.PLAYER_WAIT
+                        return SceneState.PLAYER_WAIT_START_ROOM
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         name = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:
@@ -38,8 +37,7 @@ class NameScene(AbstractScene):
 
             self.get_screen().fill("white")
 
-            utils.create_prompt(self.get_screen(),
-                                "Enter your name:", (0, 128))
+            self.get_utils().create_prompt("Enter your name:", (0, 128))
 
             pygame.draw.rect(self.get_screen(), pygame.Color(
                 "#8489FBFF") if active else "black", textbox_border)

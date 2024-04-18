@@ -1,22 +1,20 @@
-import sys
-import pygame as pg
 from time import sleep
+from datetime import datetime
+import logging
+import pygame as pg
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 from . import utils
 # from ..state.player_state import PlayerState
 # from ..network import Network
 
-import logging
 logger = logging.getLogger()
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 
 class QuestionScene(AbstractScene):
-    # TODO: add the network choice for updating the player's progress (question scene) to the server after merge
     def start_scene(self):
         # Now initialize the questions when starting the scene
         self.q_idx = 0
@@ -25,10 +23,13 @@ class QuestionScene(AbstractScene):
         self.curr_options = self.curr_question.get_options()
         self.selected = set()
         self.boxes, self.box_borders = self.__create_options_boxes()
-        self.submit_box = self.__create_submit_box()
+        self.submit_box, self.submit_box_text, self.submit_text_surface = self.get_utils(
+        ).create_submit_box()
 
         # TODO: ensure the player selects at least one option
         # TODO: add a box that encloses the option boxes
+
+        self.get_player_state().set_init_time()
 
         while True:
             for event in pg.event.get():
@@ -38,17 +39,17 @@ class QuestionScene(AbstractScene):
                         if self.submit_box.collidepoint(event.pos):
                             # note: a janky way of detecting all questions have been answered (we can definitely change this later)
                             if not self.__submit():
-                                return SceneState.QUIT
+                                delta = datetime.now() - self.get_player_state().get_init_time()
+                                self.get_network().send_elapsed_time(delta.total_seconds())
+                                return SceneState.PLAYER_WAIT_END_ROOM
                             continue
 
                         # update selection
                         for option, box in zip(self.curr_options, self.boxes):
                             if box.collidepoint(event.pos):
                                 if option in self.selected:
-                                    print(f"You have deselected \"{option}\"!")
                                     self.selected.remove(option)
                                 else:
-                                    print(f"You have selected \"{option}\"!")
                                     self.selected.add(option)
 
             self.get_screen().fill("white")
@@ -56,12 +57,8 @@ class QuestionScene(AbstractScene):
             utils.draw_leadersboard(
                 self.get_screen(), self.get_player_state().get_leadersboard(), question_rect)
 
-            # draw submit box
-            pg.draw.rect(self.get_screen(), "lightblue", self.submit_box)
-            submit_text_surface = STYLE["font"]["text"].render(
-                "Submit", True, (0, 0, 0))
-            self.get_screen().blit(submit_text_surface, (self.submit_box.x + 10,
-                                                         self.submit_box.y + self.submit_box.height // 2 - 12))
+            self.get_utils().draw_submit_box(
+                self.submit_box, self.submit_box_text, self.submit_text_surface)
 
             # draw all options
             self.__draw_options()
@@ -70,17 +67,11 @@ class QuestionScene(AbstractScene):
 
     # move to the next question
     def __submit(self):
-        print("You are submitting!")
         user_solution = MultipleChoiceSolutionBuilder(self.selected).build()
-        print(f"Your solution is {self.selected}")
         correctness = self.curr_question.verify(user_solution)
         self.__draw_correctness(correctness)
         self.get_player_state().set_progress(correctness)
-
-        # send update to the server
-        print("sending progress to server")
         self.get_network().update_progress(self.get_player_state().get_progress())
-        print("sent to server")
 
         # update scene states
         self.q_idx += 1
@@ -117,15 +108,15 @@ class QuestionScene(AbstractScene):
             text_rect.center = box.center
             self.get_screen().blit(text_surface, text_rect)
 
-    def __create_submit_box(self):
-        dist_from_corner = STYLE["width"] // 40
-        box_topright = STYLE["width"] - \
-            dist_from_corner, dist_from_corner
-        width, height = STYLE["width"] // 15, STYLE["height"] // 15
-        box = pg.Rect(0, 0, width, height)
-        box.topright = box_topright
+    # def __create_submit_box(self):
+    #     dist_from_corner = STYLE["width"] // 40
+    #     box_topright = STYLE["width"] - \
+    #         dist_from_corner, dist_from_corner
+    #     width, height = STYLE["width"] // 15, STYLE["height"] // 15
+    #     box = pg.Rect(0, 0, width, height)
+    #     box.topright = box_topright
 
-        return box
+    #     return box
 
     def __create_options_boxes(self):
         boxes, box_borders = [], []
