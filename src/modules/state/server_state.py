@@ -215,15 +215,18 @@ class ServerState:
             self.__player_states[socket_addr] = name, new_progress, lock, game_start_lock
             logger.info(
                 "Player {%s} progress has been updated: %s", name, new_progress)
-        self.__update_leadersboard()
+        self.__update_leadersboard(name, len(new_progress))
 
     # Return the updated top5players if there's a non-trivial update, otherwise return None
-    def __update_leadersboard(self):
+    def __update_leadersboard(self, name: str, player_progress: int):
         logger.debug(f"Updating leaderboard from {self.__leadersboard}")
         with self.__player_states_lock:
-            name_progress_list = [(n, len(p))
-                                  for n, p, l, _ in list(self.__player_states.values())]
-            self.__leadersboard = sorted(name_progress_list,
+            logger.debug("Input %s %s", name, player_progress)
+            filtered_list = list(
+                filter(lambda x: x[0] != name, self.__leadersboard))
+            logger.debug("Filtered %s", filtered_list)
+            filtered_list.append((name, player_progress))
+            self.__leadersboard = sorted(filtered_list,
                                          key=lambda x: x[1], reverse=True)
         logger.debug(f"Updating leaderboard to {self.__leadersboard}")
 
@@ -241,19 +244,6 @@ class ServerState:
             self.__top5players = new_top5
             return new_top5
         return None
-
-    def update_top5(self):
-        with self.__player_states_lock:
-            name_progress_list = [(n, len(p))
-                                  for n, p, l, _ in list(self.__player_states.values())]
-            new_top5 = sorted(name_progress_list,
-                              key=lambda x: x[1], reverse=True)[:5]
-            logger.debug("The new top5 players are %s", new_top5)
-
-            if new_top5 != self.__top5players:
-                self.__top5players = new_top5
-                return new_top5
-            return None
 
     def get_all_player_names(self) -> list[Name]:
         with self.__player_states_lock:

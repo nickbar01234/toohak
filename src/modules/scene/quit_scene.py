@@ -2,14 +2,12 @@ import pygame as pg
 
 from .abstract_scene import AbstractScene
 from .styles import STYLE
-from . import utils
 
 
 class QuitScene(AbstractScene):
     def start_scene(self):
 
-        button, button_border = utils.create_button(
-            self.get_screen(), (0, -100))
+        button, button_border = self.get_utils().create_button((0, -100))
         while True:
             for event in pg.event.get():
                 self.handle_quit(event)
@@ -28,8 +26,8 @@ class QuitScene(AbstractScene):
                 text_rect = text_rect.move(0, button_border.height + idx * 32)
                 self.get_screen().blit(text, text_rect)
 
-            utils.create_prompt(self.get_screen(
-            ), "Thanks for playing!", (0, self.get_screen().get_height() // 8))
+            self.get_utils().create_prompt("Thanks for playing!",
+                                           (0, self.get_screen().get_height() // 8))
 
             pg.draw.rect(self.get_screen(), "black", button_border)
             pg.draw.rect(self.get_screen(), "white", button)
