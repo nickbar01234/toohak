@@ -29,6 +29,7 @@ LEADERSBOARD = 'leadersboard'
 INDIVIDUAL_PROGRESS = 'individual_progress'
 END = 'end'
 LEAVE = 'leave'
+ELAPSE_TIME = 'time'
 
 REFEREE_START_GAME = "referee_start"
 
@@ -174,8 +175,8 @@ def decode_progress(data: bytes):
 # Message Protocol for the server to notify players that game ends
 #
 
-def encode_endgame():
-    return encode(END, "")
+def encode_endgame(data: bytes):
+    return encode(END, data)
 
 
 def decode_endgame(data: bytes):
@@ -189,7 +190,7 @@ def decode_update_or_endgame(data: bytes) -> tuple[bool, LeadersBoard]:
     match decoded:
         case {'action': action, 'msg': msg} if action == END:
             logger.debug("Decoded message: game ends")
-            return (False, [])
+            return (False, msg)
         case {'action': action, 'msg': msg} if action == LEADERSBOARD:
             logger.debug(f"Decoded message: leader's board - {str(msg)}")
             return (True, msg)
@@ -218,3 +219,11 @@ def encode_referee_startgame():
 
 def decode_referee_startgame(data: bytes):
     return decode(data, REFEREE_START_GAME)
+
+
+def encode_elapse_time(seconds: int):
+    return encode(ELAPSE_TIME, seconds)
+
+
+def decode_elapse_time(data: bytes) -> int:
+    return decode(data, ELAPSE_TIME)

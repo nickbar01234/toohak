@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import sys
 import logging
 import pygame as pg
+from .utils import Utils
 from ..state import PlayerState
 from ..network.network import Network
 
@@ -13,6 +14,7 @@ class AbstractScene(ABC):
         self.__network = network
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+        self.__utils = Utils(self.__screen)
 
     @abstractmethod
     def start_scene(self):
@@ -35,3 +37,6 @@ class AbstractScene(ABC):
                 self.get_network().disconnect()
                 pg.quit()
                 sys.exit(0)
+
+    def get_utils(self):
+        return self.__utils

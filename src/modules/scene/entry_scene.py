@@ -3,7 +3,6 @@ import pyperclip
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
-from . import utils
 
 
 class EntryScene(AbstractScene):
@@ -16,7 +15,7 @@ class EntryScene(AbstractScene):
         active = False
 
         while True:
-            textbox, textbox_border = utils.create_textbox(self.get_screen())
+            textbox, textbox_border = self.get_utils().create_textbox()
 
             for event in pygame.event.get():
                 self.handle_quit(event)
@@ -37,8 +36,7 @@ class EntryScene(AbstractScene):
 
             self.get_screen().fill("white")
 
-            utils.create_prompt(self.get_screen(),
-                                "Enter server IP address:", (0, 128))
+            self.get_utils().create_prompt("Enter server IP address:", (0, 128))
 
             pygame.draw.rect(self.get_screen(), pygame.Color(
                 "#8489FBFF") if active else "black", textbox_border)
