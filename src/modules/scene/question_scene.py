@@ -6,7 +6,6 @@ from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
-from . import utils
 # from ..state.player_state import PlayerState
 # from ..network import Network
 
@@ -54,8 +53,8 @@ class QuestionScene(AbstractScene):
 
             self.get_screen().fill("white")
             question_rect = self.curr_question.draw(self.get_screen())
-            utils.draw_leadersboard(
-                self.get_screen(), self.get_player_state().get_leadersboard(), question_rect)
+            self.get_utils().draw_leadersboard(
+                self.get_player_state().get_leadersboard(), question_rect)
 
             self.get_utils().draw_submit_box(
                 self.submit_box, self.submit_box_text, self.submit_text_surface)
