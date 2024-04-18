@@ -1,5 +1,6 @@
 import pygame as pg
 from .styles import STYLE
+from ..type.aliases import *
 
 
 class Utils:
@@ -70,6 +71,16 @@ class Utils:
         textbox = pg.Rect(0, 0, width - border * 2, height - border * 2)
         textbox.topleft = (left_x + border, left_y + border)
         return textbox, textbox_border
+
+    def draw_leadersboard(self, leadersboard: LeadersBoard, ref_rect: pg.Rect):
+        for idx, (name, n_questions) in enumerate(leadersboard):
+            text = STYLE["font"]["text"].render(
+                f"{name}: {n_questions}", True, (0, 0, 0))
+            text_rect = text.get_rect()
+            text_rect.midtop = ref_rect.midbottom
+            text_rect.top = ref_rect.bottom
+            text_rect = text_rect.move(0, ref_rect.height + idx * 32)
+            self.screen.blit(text, text_rect)
 
     def create_submit_box(self, text: str = "Submit"):
         dist_from_corner = STYLE["width"] // 40

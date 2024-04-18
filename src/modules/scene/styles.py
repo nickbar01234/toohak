@@ -44,7 +44,7 @@ class StyleType(TypedDict):
 
 STYLE: StyleType = {
     "font": {
-        "title": font_builder(72, "extrabold"),
+        "title": font_builder(54, "extrabold"),
         "question": font_builder(36, "bold"),
         "answer": font_builder(24, "extrabold"),
         "text": font_builder(16)

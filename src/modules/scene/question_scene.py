@@ -53,14 +53,8 @@ class QuestionScene(AbstractScene):
 
             self.get_screen().fill("white")
             question_rect = self.curr_question.draw(self.get_screen())
-            for idx, (name, n_questions) in enumerate(self.get_player_state().get_leadersboard()):
-                text = STYLE["font"]["text"].render(
-                    f"{name}: {n_questions}", True, (0, 0, 0))
-                text_rect = text.get_rect()
-                text_rect.midtop = question_rect.midbottom
-                text_rect.top = question_rect.bottom
-                text_rect = text_rect.move(0, question_rect.height + idx * 32)
-                self.get_screen().blit(text, text_rect)
+            self.get_utils().draw_leadersboard(
+                self.get_player_state().get_leadersboard(), question_rect)
 
             self.get_utils().draw_submit_box(
                 self.submit_box, self.submit_box_text, self.submit_text_surface)

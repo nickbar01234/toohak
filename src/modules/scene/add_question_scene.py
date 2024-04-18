@@ -28,31 +28,36 @@ class AddQuestionScene(AbstractScene):
         filled = False
         while True:
             for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit(0)
+                self.handle_quit(event)
+                match event.type:
+                    case pg.MOUSEBUTTONDOWN:
+                        # submit
+                        if self.submit_box.collidepoint(event.pos):
+                            self.__submit()
+                            return SceneState.REFEREE_START_SCENE
 
-                if event.type == pg.MOUSEBUTTONDOWN:
-                    active = self.question_box.collidepoint(event.pos)
+                    case pg.MOUSEBUTTONDOWN:
+                        active = self.question_box.collidepoint(event.pos)
 
-                    if self.submit_box.collidepoint(event.pos):
-                        # TODO finish and submit
-                        pass
+                        if self.submit_box.collidepoint(event.pos):
+                            # TODO finish and submit
+                            pass
 
-                    elif self.add_box.collidepoint(event.pos):
-                        # TODO add next question
-                        pass
+                        elif self.add_box.collidepoint(event.pos):
+                            # TODO add next question
+                            pass
 
-                if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_RETURN:
-                        print("Question added: ", self.question_description)
-                        filled = True
-                    elif event.key == pg.K_v and (event.mod & pg.KMOD_CTRL or event.mod & pg.KMOD_META):
-                        self.question_description = pyperclip.paste()
-                    elif event.key == pg.K_BACKSPACE:
-                        self.question_description = self.question_description[:-1]
-                    else:
-                        self.question_description += event.unicode
+                    case pg.KEYDOWN:
+                        if event.key == pg.K_RETURN:
+                            print("Question added: ",
+                                  self.question_description)
+                            filled = True
+                        elif event.key == pg.K_v and (event.mod & pg.KMOD_CTRL or event.mod & pg.KMOD_META):
+                            self.question_description = pyperclip.paste()
+                        elif event.key == pg.K_BACKSPACE:
+                            self.question_description = self.question_description[:-1]
+                        else:
+                            self.question_description += event.unicode
 
             self.get_screen().fill("white")
             self.__draw_buttons()
