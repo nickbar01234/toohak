@@ -32,6 +32,7 @@ class AddQuestionScene(AbstractScene):
             for event in pg.event.get():
                 self.handle_quit(event)
 
+
                 self.__question_prompt.handle_event(event)
                 _ = [p.handle_event(event) for p in self.__option_prompts]
 

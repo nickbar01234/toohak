@@ -68,7 +68,9 @@ class RoleSelectionScene(AbstractScene):
     def select_referee(self):
         self.get_player_state().set_is_player(False)
         self.get_player_state().role_selection_barrier.release()
+
         return SceneState.REFEREE_CHOOSE_QUESTION_SET
+
 
     def display_bad_selection_msg(self):
         self.get_screen().fill("beige")

@@ -94,6 +94,7 @@ class Client:
     def referee_role(self):
         logger.debug("Referee side listener waiting for game start signal")
         self.state.player_start_barrier.acquire()
+
         init_leadersboard = self.network.receive_leadersboard()
         self.state.set_leadersboard(init_leadersboard)
 
