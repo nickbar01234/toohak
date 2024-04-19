@@ -20,6 +20,7 @@ class Network:
         logger.info("Connection established.")
 
     def disconnect(self):
+        self.client.sendall(s.encode_quit())
         self.client.close()
 
     def send_role(self, role: str):

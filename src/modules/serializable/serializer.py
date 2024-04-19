@@ -30,6 +30,7 @@ INDIVIDUAL_PROGRESS = 'individual_progress'
 END = 'end'
 LEAVE = 'leave'
 ELAPSE_TIME = 'time'
+QUIT = 'quit'
 
 REFEREE_START_GAME = "referee_start"
 
@@ -227,3 +228,11 @@ def encode_elapse_time(seconds: int):
 
 def decode_elapse_time(data: bytes) -> int:
     return decode(data, ELAPSE_TIME)
+
+
+def encode_quit():
+    return encode(QUIT, "")
+
+
+def decode_quit(data: bytes):
+    return decode(data, QUIT)
