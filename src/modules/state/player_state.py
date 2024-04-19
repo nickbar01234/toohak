@@ -34,7 +34,6 @@ class PlayerState:
         self.game_starts = threading.Semaphore(0)
         self.player_start_barrier = threading.Semaphore(0)
         self.role_selection_barrier = threading.Semaphore(0)
-        self.game_start_barrier = threading.Semaphore(0)
         self.game_end_barrier = threading.Semaphore(0)
 
         # TODO(nickbar01234) - Should this state be here?

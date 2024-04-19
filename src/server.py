@@ -123,7 +123,10 @@ class Server:
             elapsed_time = s.decode_elapse_time(player_socket.recv(1024))
             self.__state.update_end_results(socket_addr, elapsed_time)
             self.__state.signal_end()
+
+            _quit = s.decode_quit(player_socket.recv(1024))
         finally:
+            logger.info("Removing %s", socket_addr)
             self.__state.remove_player(socket_addr)
 
     def referee_listener(self, referee_socket: socket.socket, referee_addr):
