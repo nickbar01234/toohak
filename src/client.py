@@ -1,7 +1,7 @@
 import logging
 import threading
 import pygame as pg
-from modules import SceneState, EntryScene, AddQuestionScene,  QuestionScene, NameScene, WaitScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, AddQuestionScene, MonitorScene, Network, STYLE
+from modules import SceneState, EntryScene, AddQuestionScene,  QuestionScene, NameScene, WaitScene, QuitScene, PlayerState, RoleSelectionScene, RefreeStartScene, SelectQuestionSetScene, AddQuestionScene, MonitorScene, Network, STYLE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -19,7 +19,7 @@ class Client:
 
         SCENES = {
             # TODO: EntryScene can remove network -> get from player's self.state
-            # SceneState.ENTRY: AddQuestionScene(screen, self.state, self.network),
+            # SceneState.ENTRY: SelectQuestionSetScene(screen, self.state, self.network),
             SceneState.ENTRY: EntryScene(screen, self.state, self.network),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
 
@@ -32,6 +32,7 @@ class Client:
             SceneState.QUIT: QuitScene(screen, self.state, self.network),
 
             # Referee scenes
+            SceneState.REFEREE_CHOOSE_QUESTION_SET: SelectQuestionSetScene(screen, self.state, self.network),
             SceneState.REFEREE_START_SCENE: RefreeStartScene(screen, self.state, self.network),
             SceneState.REFEREE_ADD_QUESTION: AddQuestionScene(screen, self.state, self.network),
             SceneState.REFEREE_MONITOR: MonitorScene(screen, self.state, self.network),
@@ -91,7 +92,9 @@ class Client:
             self.network.disconnect()
 
     def referee_role(self):
-        logger.info("Waiting for questions")
+        logger.debug("Referee side listener waiting for game start signal")
+        self.state.player_start_barrier.acquire()
+
         init_leadersboard = self.network.receive_leadersboard()
         self.state.set_leadersboard(init_leadersboard)
 
