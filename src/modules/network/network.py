@@ -1,4 +1,3 @@
-import threading
 import socket
 import logging
 from ..type.aliases import *
@@ -28,9 +27,10 @@ class Network:
 
     def send_role(self, role: str):
         self.client.sendall(s.encode_role(role))
-        # TODO: match on received response to handle errors?
-        s.decode_role_response(self.client.recv(2048))
-        logger.info("Player's role is updated on the server.")
+        logger.debug("Waiting on role response")
+        status = s.decode_role_response(self.client.recv(2048))
+        logger.info(f"Client's role is {status} on the server.")
+        return status
 
     def send_name(self, name):
         self.client.sendall(s.encode_name(name))
@@ -67,13 +67,6 @@ class Network:
         self.client.sendall(s.encode_ack("game starts"))
         return initial_leadersboard
 
-    def block_until_game_ends(self):
-        self.client.setblocking(True)
-        logger.debug(
-            "Blocking until received gameends signal from the server.")
-        s.decode_endgame(self.client.recv(2048))
-        logger.debug("Received game ends signal.")
-
     def send_signal_start_game(self):
         self.client.sendall(s.encode_referee_startgame())
 
@@ -101,3 +94,6 @@ class Network:
         self.client.settimeout(5)
         s.decode_ack(self.client.recv(1024))
         logger.info("Question Confirmation sent to the server")
+
+    def send_elapsed_time(self, seconds: int):
+        self.client.sendall(s.encode_elapse_time(seconds))

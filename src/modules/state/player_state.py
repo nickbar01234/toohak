@@ -23,7 +23,10 @@ class PlayerState:
 
         self.__questions: list[Question] = []
         self.__progress: PlayerProgress = []
-        self.__init_time = None
+
+        # This should be reset when starting question. Initializing it to a datetime for typecheck convenience
+        self.__init_time = datetime.now()
+
         self.__leadersboard: LeadersBoard = []
         self.__leadersboard_lock = threading.Lock()
 
@@ -31,6 +34,8 @@ class PlayerState:
         self.game_starts = threading.Semaphore(0)
         self.player_start_barrier = threading.Semaphore(0)
         self.role_selection_barrier = threading.Semaphore(0)
+        self.game_start_barrier = threading.Semaphore(0)
+        self.game_end_barrier = threading.Semaphore(0)
 
         # TODO(nickbar01234) - Should this state be here?
         self.__is_player = True

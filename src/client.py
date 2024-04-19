@@ -25,8 +25,10 @@ class Client:
 
             # Player scenes
             SceneState.PLAYER_NAME: NameScene(screen, self.state, self.network),
-            SceneState.PLAYER_WAIT: WaitScene(screen, self.state, self.network),
+            SceneState.PLAYER_WAIT_START_ROOM: WaitScene(screen, self.state, self.network, "You're in! We're waiting for other players to get ready...", SceneState.PLAYER_QUESTION, self.state.game_starts),
             SceneState.PLAYER_QUESTION: QuestionScene(screen, self.state, self.network),
+            SceneState.PLAYER_WAIT_END_ROOM: WaitScene(
+                screen, self.state, self.network, "We're waiting for the server to compute the results...", SceneState.QUIT, self.state.game_end_barrier),
             SceneState.QUIT: QuitScene(screen, self.state, self.network),
 
             # Referee scenes
@@ -43,15 +45,20 @@ class Client:
             target=self.listener, daemon=True)
         listener_thread.start()
 
-        while True:
-            logger.info("On scene %s", scene)
-            scene = SCENES[scene].start_scene()
+        try:
+            while True:
+                logger.info("On scene %s", scene)
+                scene = SCENES[scene].start_scene()
+        except KeyboardInterrupt:
+            self.network.disconnect()
 
     def listener(self):
         logger.info("Runing listener")
 
         # expect to release in role scene
         self.state.role_selection_barrier.acquire()
+        role = "player" if self.state.get_is_player() else "referee"
+        logger.info(f"Finished selecting role, selected {role}")
 
         if self.state.get_is_player():
             self.player_role()
@@ -59,17 +66,36 @@ class Client:
             self.referee_role()
 
     def player_role(self):
-        # expect to release in name scene
+        try:
+            # expect to release in name scene
+            self.state.player_start_barrier.acquire()
+
+            logger.info("Waiting for questions")
+            questions = self.network.receive_questions()
+            self.state.set_questions(questions)
+            logger.info("Received questions.")
+
+            init_leadersboard = self.network.block_until_game_starts()
+            self.state.set_leadersboard(init_leadersboard)
+            self.state.game_starts.release()
+
+            game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+            while game_continues:
+                self.state.set_leadersboard(leadersboard)
+                logger.info(
+                    "Leader's board updated: {%s}", self.state.get_leadersboard())
+                game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+
+            self.state.set_leadersboard(leadersboard)
+            self.state.game_end_barrier.release()
+        except Exception as _:
+            self.network.disconnect()
+
+    def referee_role(self):
+        logger.debug("Referee side listener waiting for game start signal")
         self.state.player_start_barrier.acquire()
-
-        logger.info("Waiting for questions")
-        questions = self.network.receive_questions()
-        self.state.set_questions(questions)
-        logger.info("Received questions.")
-
-        init_leadersboard = self.network.block_until_game_starts()
+        init_leadersboard = self.network.receive_leadersboard()
         self.state.set_leadersboard(init_leadersboard)
-        self.state.game_starts.release()
 
         game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
         while game_continues:
@@ -81,16 +107,9 @@ class Client:
         self.network.block_until_game_ends()
         logger.info("Received update from server: Game ends")
 
-        # TODO: wait for and receive Final rank before exiting
-
-    def referee_role(self):
-        logger.info("Waiting for questions")
-        debug_sem = threading.Semaphore(0)
-        debug_sem.acquire()
-
     def music_thread(self):
         pg.mixer.music.load("assets/music/toohak_song.mp3")
-        pg.mixer.music.play(loops=-1)
+        # pg.mixer.music.play(loops=-1)
 
 
 if __name__ == "__main__":

@@ -42,6 +42,7 @@ class Server:
 
     # TODO: tell referee to quit when game ends
     def game_starter_thread(self):
+        # TODO(nickbar01234) - Restart game thread to play another round?
         logger.info("Thread started to monitor the game_starting state.")
 
         self.__state.wait_game_start()
@@ -51,34 +52,50 @@ class Server:
             self.__state.get_questions()))
 
         # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
-        init_top5players = [(n, 0)
-                            for n in self.__state.get_all_player_names()[:5]]
+        self.__state.init_leadersboard()
+        init_top5players = self.__state.get_top5()
         self.broadcast_with_ack(
             "game starts", s.encode_startgame(init_top5players))
+
+        # Send initialized full leadersboard to referee
+        self.send_full_leadersboard()
 
         for address in self.__state.get_all_socket_addr():
             self.__state.player_signal_start_game(address)
 
+        self.__state.wait_end()
+        self.broadcast_without_ack("Broadcasting final results", s.encode_endgame(
+            self.__state.get_final_results()))
+
     def listener(self, client: socket.socket, addr):
-        try:
-            logger.info("Listening from %s", addr)
-            client.sendall(s.encode_connect_success())
-            role_selection = s.decode_role(client.recv(2048))
-            client.sendall(s.encode_role_response())
-            match role_selection:
-                case "player":
-                    return self.player_listener(client, addr)
-                case "referee":
-                    return self.referee_listener(client, addr)
-        finally:
-            client.close()
+        logger.info("Listening from %s", addr)
+        client.sendall(s.encode_connect_success())
+        logger.info("Reciving role")
+        role_selection = s.decode_role(client.recv(2048))
+        recv_status = "success"
+
+        with self.__state.referee_lock:
+            if role_selection == "referee":
+                # if another client is referee already
+                if self.__state.get_referee():
+                    recv_status = "failure"
+                    role_selection = "player"
+                else:
+                    self.__state.set_referee((client, addr))
+
+        client.sendall(s.encode_role_response(recv_status))
+        match role_selection:
+            case "player":
+                return self.player_listener(client, addr)
+            case "referee":
+                return self.referee_listener(client, addr)
 
     # For each listener's thread to receive message form a specific player
 
     def player_listener(self, player_socket: Socket, player_addr: Addr):
-        socket_addr = (player_socket, player_addr)
-        player_lock = threading.Lock()
         try:
+            socket_addr = (player_socket, player_addr)
+            player_lock = threading.Lock()
             logger.info(
                 "Listener thread started to listen from %s", player_addr)
 
@@ -96,34 +113,21 @@ class Server:
                 progress = s.decode_progress(player_socket.recv(2048))
                 logger.info("Receive %s from %s", progress, player_name)
                 self.__state.update_player_progress(socket_addr, progress)
-                if (top5 := self.__state.update_top5()):
+                # if (top5 := self.__state.update_top5()):
+                if (top5 := self.__state.get_top5()):
+                    logger.debug("Sending updated top 5")
                     self.broadcast_without_ack(
                         "new top5", s.encode_leadersboard(top5))
+                self.send_full_leadersboard()
 
-            # # Players have finished all the questions
-            # logger.info(
-            #     f"Player {player_name, player_addr} has finished all the questions")
-
-            # # Game ends
-            # i = self.__gameEnds.wait()
-            # if i == 0:  # only one player needs to broadcast a message & log
-            #     self.broadcast("game ends", s.encode_le)
-            #     logger.info(f"Game ends: all players finished")
-
-            # # TODO: how long does the player stay connected here (auto exit timeout?)
-            # player_socket.settimeout(120)  # auto log out after 2 min
-            # s.decode_leave(player_socket.recv(1024))
-            # logger.info(
-            #     f"Player {player_name, player_addr} left. Listener threading exiting..")
-        except Exception as e:
-            print(e)
-            information = self.__state.get_socket_addr(socket_addr)
-            logger.error("Lost the connection with %s", information)
+            elapsed_time = s.decode_elapse_time(player_socket.recv(1024))
+            self.__state.update_end_results(socket_addr, elapsed_time)
+            self.__state.signal_end()
         finally:
-            logger.info("Disconnecting %s", socket_addr)
             self.__state.remove_player(socket_addr)
 
     def referee_listener(self, referee_socket: socket.socket, referee_addr):
+        socket_addr = (referee_socket, referee_addr)
         try:
             logger.info(
                 "Referee thread started to listen from %s", referee_addr)
@@ -157,8 +161,13 @@ class Server:
 
             while True:
                 pass
+        except Exception as e:
+            print(e)
+            information = self.__state.get_socket_addr(socket_addr)
+            logger.error("Lost the connection with %s", information)
         finally:
-            return
+            logger.info("Disconnecting %s (referee)", socket_addr)
+            self.__state.remove_referee()
 
     #
     # Broadcast messages to players when enforcing strict synchronization in certain stages.
@@ -189,12 +198,20 @@ class Server:
                 logger.info(
                     "Async - Broadcasted {%s} to Player {%s}", summary, name)
 
+    def send_full_leadersboard(self):
+        logger.debug("Full leaderboard is %s", self.__state.get_leadersboard())
+        with self.__state.referee_lock:
+            self.__state.get_referee()[0].sendall(s.encode_leadersboard(
+                self.__state.get_leadersboard()))
+        logger.info("Sent leadersboard to Referee")
+
     def receive_player_name(self, player_socket: socket, player_lock: threading.Lock):
+        logger.debug("Decoding name")
         player_name = s.decode_name(player_socket.recv(2048))
         with player_lock:
             player_socket.sendall(s.encode_name_response())
 
-        return player_name
+            return player_name
 
 
 if __name__ == "__main__":

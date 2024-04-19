@@ -1,10 +1,5 @@
-import sys
-import time
-import random
 import pygame as pg
-import pyperclip
 from .abstract_scene import AbstractScene
-from .scene_state import SceneState
 from .styles import STYLE
 
 
@@ -13,12 +8,15 @@ class MonitorScene(AbstractScene):
         while True:
             for event in pg.event.get():
                 self.handle_quit(event)
-                # match event.type:
-                #     case pg.MOUSEBUTTONDOWN:
-                #         if self.submit_box.collidepoint(event.pos):
-                #             self.__submit()
-                #             return SceneState.REFEREE_MONITOR
 
-            self.get_screen().fill("red")
+            self.get_screen().fill("lightgreen")
+            text_surface = STYLE["font"]["title"].render(
+                "Monitoring Leaderboard...", True, (0, 0, 0))
+            screen_midtop = self.get_screen().get_rect().midtop
+            text_rect = text_surface.get_rect(
+                midtop=(screen_midtop[0], screen_midtop[1] + 200))
+            self.get_screen().blit(text_surface, text_rect)
+
+            self.get_utils().draw_leadersboard(
+                self.get_player_state().get_leadersboard(), text_rect)
             pg.display.flip()
-            time.sleep(3)
