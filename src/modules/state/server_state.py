@@ -20,7 +20,7 @@ questions = [
     .add_option("Xu")
     .add_option("Huang")
     .add_option("Sheldon")
-    .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").add_solution("Doan").build())
+    .add_solution(MultipleChoiceSolutionBuilder().add_solution("Huang").build())
     .build(),
     MultipleChoiceQuestionBuilder()
     .add_question("What day is it")
