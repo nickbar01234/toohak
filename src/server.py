@@ -12,7 +12,10 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 class Server:
     def __init__(self, ip, port):
+        self.__ip = ip
+        self.__port = port
         self.__state = ServerState(ip, port)
+        self.__reset_barrier = threading.Semaphore(0)
 
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,7 +35,7 @@ class Server:
                 listener = threading.Thread(
                     target=self.listener, args=(client, addr), daemon=True)
                 self.__state.add_listener(listener)
-                listener.start()
+                listener.start()  # Referee listener will reset the server state when the referee quits
 
         except KeyboardInterrupt:
             server_socket.close()
@@ -40,32 +43,41 @@ class Server:
         # for listener in self.__playerListeners:
         #     listener.join()
 
+    def __reset_game(self):
+        # TODO: should I join or wait for the listneres from the previous game?
+        logger.info("Reseting game state")
+        self.__state = ServerState(self.__ip, self.__port)
+        self.__reset_barrier.release()
+
     # TODO: tell referee to quit when game ends
     def game_starter_thread(self):
-        # TODO(nickbar01234) - Restart game thread to play another round?
-        logger.info("Thread started to monitor the game_starting state.")
+        while True:
+            logger.info(
+                "New Game State: Thread started to monitor the game_starting state.")
 
-        self.__state.wait_game_start()
-        logger.info("Game started")
+            self.__state.wait_game_start()
+            logger.info("Game started")
 
-        self.broadcast_with_ack("distribute questions", s.encode_questions(
-            self.__state.get_questions()))
+            self.broadcast_with_ack("distribute questions", s.encode_questions(
+                self.__state.get_questions()))
 
-        # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
-        self.__state.init_leadersboard()
-        init_top5players = self.__state.get_top5()
-        self.broadcast_with_ack(
-            "game starts", s.encode_startgame(init_top5players))
+            # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
+            self.__state.init_leadersboard()
+            init_top5players = self.__state.get_top5()
+            self.broadcast_with_ack(
+                "game starts", s.encode_startgame(init_top5players))
 
-        # Send initialized full leadersboard to referee
-        self.send_full_leadersboard()
+            # Send initialized full leadersboard to referee
+            self.send_full_leadersboard()
 
-        for address in self.__state.get_all_socket_addr():
-            self.__state.player_signal_start_game(address)
+            for address in self.__state.get_all_socket_addr():
+                self.__state.player_signal_start_game(address)
 
-        self.__state.wait_end()
-        self.broadcast_without_ack("Broadcasting final results", s.encode_endgame(
-            self.__state.get_final_results()))
+            self.__state.wait_end()
+            self.broadcast_without_ack("Broadcasting final results", s.encode_endgame(
+                self.__state.get_final_results()))
+
+            self.reset_barrier.acquire()
 
     def listener(self, client: socket.socket, addr):
         logger.info("Listening from %s", addr)
@@ -171,6 +183,7 @@ class Server:
         finally:
             logger.info("Disconnecting %s (referee)", socket_addr)
             self.__state.remove_referee()
+            self.__reset_game()
 
     #
     # Broadcast messages to players when enforcing strict synchronization in certain stages.
@@ -220,5 +233,5 @@ class Server:
 if __name__ == "__main__":
     hostname = socket.gethostname()
     IP = socket.gethostbyname_ex(hostname)[-1][-1]
-    PORT = 5556
+    PORT = 5555
     Server(IP, PORT).start()
