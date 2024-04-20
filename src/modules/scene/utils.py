@@ -18,6 +18,7 @@ class Utils:
         rect.midtop = self.screen.get_rect().midtop
         rect = rect.move(*margin)
         self.screen.blit(text, rect)
+        return rect
 
     # new - create the prompt and input box together
     def create_prompt_with_inputbox(self,

@@ -107,7 +107,7 @@ class Client:
 
     def music_thread(self):
         pg.mixer.music.load("assets/music/toohak_song.mp3")
-        # pg.mixer.music.play(loops=-1)
+        pg.mixer.music.play(loops=-1)
 
 
 if __name__ == "__main__":
