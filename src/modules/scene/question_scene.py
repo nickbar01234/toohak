@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 import logging
 import pygame as pg
@@ -6,8 +7,6 @@ from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
-# from ..state.player_state import PlayerState
-# from ..network import Network
 
 logger = logging.getLogger()
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
@@ -30,13 +29,6 @@ class QuestionScene(AbstractScene):
 
         self.get_player_state().set_init_time()
 
-        checkmark_img, checkmark_img_rect = self.__load_image(
-            self.container, "checkmark.webp")
-        xmark_img, xmark_img_rect = self.__load_image(
-            self.container, "xmark.png")
-
-        last_correct = None
-
         while True:
             n_selection = len(self.curr_question.get_solution().get_solution())
 
@@ -58,10 +50,12 @@ class QuestionScene(AbstractScene):
                                 if len(self.selected) == n_selection:
                                     user_solution = MultipleChoiceSolutionBuilder(
                                         self.selected).build()
-                                    last_correct = self.curr_question.verify(
+                                    correctness = self.curr_question.verify(
                                         user_solution)
-                                    self.get_player_state().set_progress(last_correct)
+
+                                    self.get_player_state().set_progress(correctness)
                                     self.get_network().update_progress(self.get_player_state().get_progress())
+                                    self.__draw_correctness(correctness)
                                     self.q_idx += 1
                                     if self.num_questions == self.q_idx:
                                         delta = datetime.now() - self.get_player_state().get_init_time()
@@ -98,24 +92,19 @@ class QuestionScene(AbstractScene):
                 self.get_player_state().get_leadersboard(), question_rect)
 
             # draw all options
+
             self.__draw_options()
-
-            if last_correct is not None:
-                img, img_rect = None, None
-                if last_correct:
-                    img, img_rect = checkmark_img, checkmark_img_rect
-                else:
-                    img, img_rect = xmark_img, xmark_img_rect
-
-                status_text = STYLE["font"]["text"].render(
-                    "Last question", True, "black")
-                status_text_rect = status_text.get_rect()
-                status_text_rect.topright = img_rect.topleft
-                status_text_rect.right -= 10
-                self.get_screen().blit(status_text, status_text_rect)
-                self.get_screen().blit(img, img_rect)
-
             pg.display.flip()
+
+    def __draw_correctness(self, correctness):
+        text = STYLE["font"]["title"].render(
+            f"Your answer was {correctness}!", True, (0, 0, 0))
+        rect = text.get_rect()
+        rect.center = self.get_screen().get_rect().center
+        self.get_screen().fill("white")
+        self.get_screen().blit(text, rect)
+        pg.display.flip()
+        time.sleep(1)
 
     def __draw_options(self):
         pg.draw.rect(self.get_screen(), "black", self.container)
@@ -154,11 +143,3 @@ class QuestionScene(AbstractScene):
                 row += 1
 
         return container, boxes, box_borders
-
-    def __load_image(self, container: pg.Surface, filename: str):
-        img = pg.image.load(os.path.join("src", "static", "images", filename))
-        img = pg.transform.smoothscale(img, (25, 25))
-        img_rect = img.get_rect()
-        img_rect.topright = container.topright
-        img_rect = img_rect.move(-15, 15)
-        return img, img_rect

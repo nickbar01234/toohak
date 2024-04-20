@@ -197,5 +197,5 @@ class Server:
 if __name__ == "__main__":
     hostname = socket.gethostname()
     IP = socket.gethostbyname_ex(hostname)[-1][-1]
-    PORT = 5555
+    PORT = 5556
     Server(IP, PORT).start()
