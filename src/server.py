@@ -12,10 +12,8 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 class Server:
     def __init__(self, ip, port):
-        self.__ip = ip
-        self.__port = port
-        self.__state = ServerState(ip, port)
-        self.__reset_barrier = threading.Semaphore(0)
+        self.__addr = (ip, port)
+        self.__state = ServerState(*self.__addr)
 
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,12 +40,6 @@ class Server:
         # TODO: add a graceful way to terminate the server & wait for the player threads (I.e. exit while loop)?
         # for listener in self.__playerListeners:
         #     listener.join()
-
-    def __reset_game(self):
-        # TODO: should I join or wait for the listneres from the previous game?
-        logger.info("Reseting game state")
-        self.__state = ServerState(self.__ip, self.__port)
-        self.__reset_barrier.release()
 
     # TODO: tell referee to quit when game ends
     def game_starter_thread(self):
@@ -77,7 +69,8 @@ class Server:
             self.broadcast_without_ack("Broadcasting final results", s.encode_endgame(
                 self.__state.get_final_results()))
 
-            self.reset_barrier.acquire()
+            self.__state.wait_exit()
+            self.__state = ServerState(*self.__addr)
 
     def listener(self, client: socket.socket, addr):
         logger.info("Listening from %s", addr)
@@ -138,7 +131,7 @@ class Server:
 
             _quit = s.decode_quit(player_socket.recv(1024))
         finally:
-            logger.info("Removing %s", socket_addr)
+            logger.info("[Player] Disconnecting %s", socket_addr)
             self.__state.remove_player(socket_addr)
 
     def referee_listener(self, referee_socket: socket.socket, referee_addr):
@@ -151,7 +144,7 @@ class Server:
             question_set = s.decode_defaults_or_define_questions(
                 referee_socket.recv(256))
             referee_socket.sendall(s.encode_ack(
-                "Received defualts or define question decision."))
+                "Received defaults or define question decision."))
 
             # Referee chooses questions
             if question_set == NUM_QUESTIONS:
@@ -174,16 +167,13 @@ class Server:
             s.decode_referee_startgame(referee_socket.recv(1024))
             self.__state.signal_game_start()
 
-            while True:
-                pass
+            _quit = s.decode_quit(referee_socket.recv(1024))
         except Exception as e:
-            print(e)
-            information = self.__state.get_socket_addr(socket_addr)
-            logger.error("Lost the connection with %s", information)
+            logger.debug(e)
+            logger.error("[Referee] Lost connection with %s", socket_addr)
         finally:
-            logger.info("Disconnecting %s (referee)", socket_addr)
+            logger.info("[Referee] Disconnecting %s", socket_addr)
             self.__state.remove_referee()
-            self.__reset_game()
 
     #
     # Broadcast messages to players when enforcing strict synchronization in certain stages.
@@ -217,8 +207,9 @@ class Server:
     def send_full_leadersboard(self):
         logger.debug("Full leaderboard is %s", self.__state.get_leadersboard())
         with self.__state.referee_lock:
-            self.__state.get_referee()[0].sendall(s.encode_leadersboard(
-                self.__state.get_leadersboard()))
+            if referee_addr := self.__state.get_referee():
+                referee_addr[0].sendall(s.encode_leadersboard(
+                    self.__state.get_leadersboard()))
         logger.info("Sent leadersboard to Referee")
 
     def receive_player_name(self, player_socket: socket, player_lock: threading.Lock):
@@ -226,7 +217,6 @@ class Server:
         player_name = s.decode_name(player_socket.recv(2048))
         with player_lock:
             player_socket.sendall(s.encode_name_response())
-
             return player_name
 
 

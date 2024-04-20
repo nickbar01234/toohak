@@ -14,7 +14,7 @@ class ServerState:
 
         # referee states
         self.referee_lock = threading.Lock()
-        self.__referee: SocketAddr = None
+        self.__referee: SocketAddr | None = None
 
         # players states
         self.__player_states_lock = threading.Lock()  # guard both states and top5
@@ -35,6 +35,9 @@ class ServerState:
         # TODO: change later to receive from the referee: default / customized
         self.__questions = []
         self.__questions_lock = threading.Lock()
+
+        self.__referee_exit = threading.Semaphore(0)
+        self.__player_exit = threading.Condition(self.__player_states_lock)
 
     def get_server_addr(self):
         return self.__addr
@@ -60,8 +63,7 @@ class ServerState:
                 del self.__player_states[socket_addr]
 
             if len(self.__player_states) == 0:
-                # All players have left the room, reset state
-                self.reset_state()
+                self.__player_exit.notify()
 
         logger.info("Removed connection from %s", socket_addr)
 
@@ -74,6 +76,7 @@ class ServerState:
     def remove_referee(self):
         with self.referee_lock:
             self.__referee = None
+            self.__referee_exit.release()
 
     def player_wait_start_game(self, socket_addr: SocketAddr):
         player = None
@@ -99,14 +102,11 @@ class ServerState:
                 "Player {%s} progress has been updated: %s", name, new_progress)
         self.__update_leadersboard(name, len(new_progress))
 
-    # Return the updated top5players if there's a non-trivial update, otherwise return None
     def __update_leadersboard(self, name: str, player_progress: int):
         logger.debug(f"Updating leaderboard from {self.__leadersboard}")
         with self.__player_states_lock:
-            logger.debug("Input %s %s", name, player_progress)
             filtered_list = list(
                 filter(lambda x: x[0] != name, self.__leadersboard))
-            logger.debug("Filtered %s", filtered_list)
             filtered_list.append((name, player_progress))
             self.__leadersboard = sorted(filtered_list,
                                          key=lambda x: x[1], reverse=True)
@@ -116,7 +116,8 @@ class ServerState:
         self.__leadersboard = [(n, 0) for n in self.get_all_player_names()]
 
     def get_leadersboard(self):
-        return self.__leadersboard
+        with self.__player_states_lock:
+            return list(self.__leadersboard)
 
     def get_top5(self):
         new_top5 = self.__leadersboard[:5]
@@ -183,19 +184,16 @@ class ServerState:
 
     def signal_end(self):
         with self.__player_states_lock:
+            logger.debug(self.__player_states)
             if len(self.__results) >= len(self.__player_states):
                 self.__game_ends.release()
-
-    def reset_state(self):
-        with self.__player_states_lock:
-            for (player_socket, _) in self.__player_states:
-                player_socket.close()
-
-        self.__game_starts = threading.Semaphore(0)
-        self.__game_ends = threading.Semaphore(0)
-        self.__top5players = []
-        self.__results = []
 
     def get_final_results(self) -> LeadersBoard:
         with self.__player_states_lock:
             return list(map(lambda x: (x[0], x[1]), sorted(self.__results, key=lambda x: (x[1], x[2]), reverse=True)))[:5]
+
+    def wait_exit(self):
+        self.__referee_exit.acquire()
+        with self.__player_states_lock:
+            while len(self.__player_states) > 0:
+                self.__player_exit.wait()
