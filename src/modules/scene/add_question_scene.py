@@ -37,13 +37,8 @@ class AddQuestionScene(AbstractScene):
                 self.handle_quit(event)
 
                 self.__question_prompt.handle_event(event)
-                # Handle options + enforce single correct answer
-                for i, p in enumerate(self.__option_prompts):
-                    if p.handle_event(event):
-                        for j, p in enumerate(self.__option_prompts):
-                            if i != j:
-                                p.set_correct_answer(False)
-                # _ = [p.handle_event(event) for p in self.__option_prompts]
+                # Handle options
+                _ = [p.handle_event(event) for p in self.__option_prompts]
 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if self.submit_box.collidepoint(event.pos):
@@ -85,22 +80,22 @@ class AddQuestionScene(AbstractScene):
         # Collect the current question, options and solution
         builder = MultipleChoiceQuestionBuilder() .add_question(
             self.__question_prompt.get_content())
+        soln_builder = MultipleChoiceSolutionBuilder()
 
         has_solution = False
         for option_prompt in self.__option_prompts:
             content = option_prompt.get_content()
             builder = builder.add_option(content)
             if option_prompt.get_correct_answer():
-                builder = builder.add_solution(
-                    MultipleChoiceSolutionBuilder().add_solution(content).build())
-                has_solution = True
+                soln_builder = soln_builder.add_solution(content)
         if not has_solution:
             builder = builder.add_solution(
                 MultipleChoiceSolutionBuilder().add_solution("PLACEHOLDER").build())
             logger.warning("There's no correct answer for this question.")
+        else:
+            builder = builder.add_solution(soln_builder.build())
 
         question = builder.build()
-
         logger.info("Question built: %s", question)
         return question
 

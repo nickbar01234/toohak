@@ -24,6 +24,9 @@ class PromptInput:
         self.font_style = font_style
         self.add_check_box = add_check_box
 
+        # conditional rects
+        self.check_box_triple = None
+
         # Create the Rects
         self.__create_prompt()
 
@@ -33,14 +36,14 @@ class PromptInput:
         self.correct_answer = False
 
     # Only return true if it turns correct_answer = True by the current click!
-    def handle_event(self, event) -> bool:
-        change_to_correct_answer = False
+
+    def handle_event(self, event):
         if event.type == pg.MOUSEBUTTONDOWN:
             self.active = self.inputbox.collidepoint(event.pos)
             if self.add_check_box:
-                if self.check_box.collidepoint(event.pos):
+                check_box, _ = self.check_box_triple
+                if check_box.collidepoint(event.pos):
                     self.correct_answer = not self.correct_answer
-                    change_to_correct_answer = self.correct_answer
 
         if self.active:
             if event.type == pg.KEYDOWN:
@@ -54,8 +57,6 @@ class PromptInput:
                 else:
                     self.content += event.unicode
 
-        return change_to_correct_answer
-
     def draw(self):
         font = STYLE["font"]["text"]
         # draw the prompt text
@@ -65,12 +66,24 @@ class PromptInput:
         # draw the checkbox if needed
         if self.add_check_box:
             if self.correct_answer:
-                correct_answer_surface = font.render(
-                    "Correct Answer", True, (0, 0, 0))
-                screen.blit(correct_answer_surface,
-                            (self.check_box.x, self.check_box.y))
+                border, inner = self.check_box_triple
+                pg.draw.rect(screen, "green", border)
+
+                text_surface = STYLE["font"]["text"].render(
+                    "Correct Answer!", True, "green")
+                text_rect = text_surface.get_rect()
+                text_rect.topleft = border.topright
+                screen.blit(text_surface, text_rect)
             else:
-                pg.draw.rect(screen, "black", self.check_box)
+                border, inner = self.check_box_triple
+                pg.draw.rect(screen, "black", border)
+                pg.draw.rect(screen, "white", inner)
+
+                text_surface = STYLE["font"]["text"].render(
+                    "Correct Answer?", True, "black")
+                text_rect = text_surface.get_rect()
+                text_rect.topleft = border.topright
+                screen.blit(text_surface, text_rect)
 
         # draw the input box
         color = pg.Color("#8489FBFF") if self.active else pg.Color(
@@ -101,19 +114,20 @@ class PromptInput:
         prompt_rect.midtop = (self.top_x, self.top_y)
 
         # Create the check-box if needed
-        check_box_rect = None
         if self.add_check_box:
-            check_box_rect = pg.Rect(
-                prompt_rect.right + 20, prompt_rect.top, 40, 40)
+            check_box_border = pg.Rect(
+                prompt_rect.right + 20, prompt_rect.top, 20, 20)
+            border = 3
+            check_box_rect = pg.Rect(check_box_border.left + border, check_box_border.top + border,
+                                     check_box_border.width - border * 2, check_box_border.width - border * 2)
+            self.check_box_triple = (check_box_border, check_box_rect)
 
         # Input box rectangle
         input_box_border = pg.Rect(0, 0, *self.dimension)
         input_box_border.midtop = (self.top_x, prompt_rect.bottom + 20)
 
-        input_box = pg.Rect(input_box_border.left + self.border, input_box_border.top + self.border,
-                            input_box_border.width - self.border * 2, input_box_border.height - self.border * 2)
+        self.inputbox = pg.Rect(input_box_border.left + self.border, input_box_border.top + self.border,
+                                input_box_border.width - self.border * 2, input_box_border.height - self.border * 2)
 
         self.prompt_pair = (text, prompt_rect)
-        self.inputbox = input_box
         self.inputbox_border = input_box_border
-        self.check_box = check_box_rect
