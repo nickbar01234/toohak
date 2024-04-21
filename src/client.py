@@ -88,25 +88,29 @@ class Client:
 
             self.state.set_leadersboard(leadersboard)
             self.state.game_end_barrier.release()
-        except Exception as _:
+        except Exception as e:
+            logger.debug("[Player Listener] %s", e)
             self.network.disconnect()
 
     def referee_role(self):
-        logger.debug("Referee side listener waiting for game start signal")
-        self.state.player_start_barrier.acquire()
+        try:
+            logger.debug("Referee side listener waiting for game start signal")
+            self.state.player_start_barrier.acquire()
 
-        init_leadersboard = self.network.receive_leadersboard()
-        self.state.set_leadersboard(init_leadersboard)
+            init_leadersboard = self.network.receive_leadersboard()
+            self.state.set_leadersboard(init_leadersboard)
 
-        game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
-        while game_continues:
-            self.state.set_leadersboard(leadersboard)
-            logger.info(
-                "Leader's board updated: {%s}", self.state.get_leadersboard())
             game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+            while game_continues:
+                self.state.set_leadersboard(leadersboard)
+                logger.info(
+                    "Leader's board updated: {%s}", self.state.get_leadersboard())
+                game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
 
-        self.network.block_until_game_ends()
-        logger.info("Received update from server: Game ends")
+            logger.info("Received update from server: Game ends")
+        except Exception as e:
+            logger.debug("[Referee Listener] %s", e)
+            self.network.disconnect()
 
     def music_thread(self):
         pg.mixer.music.load("assets/music/toohak_song.mp3")

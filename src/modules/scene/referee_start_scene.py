@@ -14,6 +14,7 @@ class RefreeStartScene(AbstractScene):
 
                 if event.type == pg.MOUSEBUTTONDOWN and start_box.collidepoint(event.pos):
                     self.get_network().send_signal_start_game()
+                    self.get_player_state().player_start_barrier.release()
                     return SceneState.REFEREE_MONITOR
 
             self.get_screen().fill("white")
