@@ -18,7 +18,7 @@ class MonitorScene(AbstractScene):
                 midtop=(screen_midtop[0], screen_midtop[1] + 100))
             self.get_screen().blit(text_surface, text_rect)
 
-            leaderboard_box = self.get_utils().create_leaderboard_box()
+            leaderboard_box = self.get_utils().create_leaderboard_box(fromtop=150)
             self.get_utils().draw_leaderboard(leaderboard_box, len(self.get_player_state().get_questions()),
                                               self.get_player_state().get_leadersboard(), display_correctness=True)
             pg.display.flip()
