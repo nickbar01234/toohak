@@ -35,6 +35,7 @@ class PlayerState:
         self.player_start_barrier = threading.Semaphore(0)
         self.role_selection_barrier = threading.Semaphore(0)
         self.game_end_barrier = threading.Semaphore(0)
+        self.referee_barrier = threading.Semaphore(0)
 
         # TODO(nickbar01234) - Should this state be here?
         self.__is_player = True
@@ -60,9 +61,6 @@ class PlayerState:
 
         self.__questions = questions
         logger.info("Received questions and updated the local question bank.")
-
-    def add_question(self, question: Question):
-        self.__questions.append(question)
 
     def get_progress(self) -> PlayerProgress:
         return self.__progress

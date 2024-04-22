@@ -97,6 +97,7 @@ class Client:
             logger.debug("Referee side listener waiting for game start signal")
             self.state.player_start_barrier.acquire()
 
+            self.state.referee_barrier.acquire()
             questions = self.network.receive_questions()
             self.state.set_questions(questions)
             init_leadersboard = self.network.receive_leadersboard()
