@@ -140,6 +140,8 @@ class Utils:
         '''
         :param rect Relative anchor point
         :param nquestions Total number of questions
+
+        :note Doesn't work with more than 20 questions
         '''
 
         left_anchor, top_anchor = ref_rect.topleft
@@ -181,7 +183,7 @@ class Utils:
 
                 if elapsed is not None:
                     elapsed_left = left_anchor + \
-                        nquestions * (box_width + box_margin_y)
+                        nquestions * (box_width + box_margin_y) + 16
                     elapsed_top = top_anchor + row * \
                         (box_height + box_margin_x) + box_height // 2 - 8
                     elapsed_text = STYLE["font"]["text"].render(

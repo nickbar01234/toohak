@@ -61,6 +61,9 @@ class PlayerState:
         self.__questions = questions
         logger.info("Received questions and updated the local question bank.")
 
+    def add_question(self, question: Question):
+        self.__questions.append(question)
+
     def get_progress(self) -> PlayerProgress:
         return self.__progress
 

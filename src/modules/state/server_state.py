@@ -23,7 +23,7 @@ class ServerState:
         # leadersboard states
         self.__leadersboard: LeadersBoard = []
         self.__top5players: LeadersBoard = []
-        self.__results: Results = []
+        self.__results: LeadersBoard = []
 
         # only main thread should access
         # TODO(nickbar01234) - Should clean up threads
@@ -166,6 +166,7 @@ class ServerState:
     def choose_question_set(self, idx: int):
         with self.__questions_lock:
             self.__questions = QUESTIONS[idx]
+            return self.__questions
 
     def wait_game_start(self):
         self.__game_starts.acquire()
@@ -173,11 +174,11 @@ class ServerState:
     def signal_game_start(self):
         self.__game_starts.release()
 
-    def update_end_results(self, addr: SocketAddr, seconds: int):
+    def update_end_results(self, addr: SocketAddr, seconds: float):
         with self.__player_states_lock:
             if addr in self.__player_states:
                 name, progress, _, _ = self.__player_states[addr]
-                self.__results.append((name, sum(progress), seconds))
+                self.__results.append((name, progress, seconds))
 
     def wait_end(self):
         self.__game_ends.acquire()
@@ -199,4 +200,4 @@ class ServerState:
 
     def get_final_results(self) -> LeadersBoard:
         with self.__player_states_lock:
-            return list(map(lambda x: (x[0], x[1]), sorted(self.__results, key=lambda x: (x[1], x[2]), reverse=True)))[:5]
+            return list(sorted(self.__results, key=lambda x: (sum(x[1]), x[2]), reverse=True))[:5]
