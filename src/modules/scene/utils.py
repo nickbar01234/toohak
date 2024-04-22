@@ -47,11 +47,11 @@ class Utils:
     def draw_prompt_with_inputbox(self, active, filled):
         self.screen.blit(*self.prompt)
 
-        pg.draw.rect(self.get_screen(),
+        pg.draw.rect(self.screen,
                      pg.Color("#00FF00") if filled
                      else pg.Color("#8489FBFF") if active
                      else "black", self.question_box_border)
-        pg.draw.rect(self.get_screen(), "white", self.question_box)
+        pg.draw.rect(self.screen, "white", self.question_box)
 
     def create_textbox(self, dimension: tuple[int, int] = (512, 64), border: int = 3):
         textbox_border = pg.Rect(0, 0, *dimension)
@@ -125,6 +125,16 @@ class Utils:
                               color: str = "lightblue"):
         pg.draw.rect(self.screen, color, box)
         self.screen.blit(text_surface, text_rect)
+
+    def create_leaderboard_box(self):
+        leaderboard_margin_x = 64
+        leaderboard_margin_y = 32
+        leaderboard_box_width = self.screen.get_width() - leaderboard_margin_x * 2
+        leaderboard_box_height = 256
+        leaderboard_box = pg.Rect(
+            leaderboard_margin_x, 200 + leaderboard_margin_y, leaderboard_box_width, leaderboard_box_height)
+
+        return leaderboard_box
 
     def draw_leaderboard(self, ref_rect: pg.Rect, nquestions: int, leaderboard: LeadersBoard, display_correctness=False):
         '''
