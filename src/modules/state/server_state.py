@@ -97,23 +97,24 @@ class ServerState:
             self.__player_states[socket_addr] = name, new_progress, lock, game_start_lock
             logger.info(
                 "Player {%s} progress has been updated: %s", name, new_progress)
-        self.__update_leadersboard(name, len(new_progress))
+        self.__update_leadersboard(name, new_progress)
 
     # Return the updated top5players if there's a non-trivial update, otherwise return None
-    def __update_leadersboard(self, name: str, player_progress: int):
-        logger.debug(f"Updating leaderboard from {self.__leadersboard}")
+    def __update_leadersboard(self, name: str, player_progress: PlayerProgress):
+        logger.debug("Updating leaderboard from %s", self.__leadersboard)
         with self.__player_states_lock:
             logger.debug("Input %s %s", name, player_progress)
             filtered_list = list(
                 filter(lambda x: x[0] != name, self.__leadersboard))
             logger.debug("Filtered %s", filtered_list)
-            filtered_list.append((name, player_progress))
+            filtered_list.append((name, player_progress, None))
             self.__leadersboard = sorted(filtered_list,
-                                         key=lambda x: x[1], reverse=True)
-        logger.debug(f"Updating leaderboard to {self.__leadersboard}")
+                                         key=lambda x: len(x[1]), reverse=True)
+        logger.debug("Updating leaderboard to %s", self.__leadersboard)
 
     def init_leadersboard(self):
-        self.__leadersboard = [(n, 0) for n in self.get_all_player_names()]
+        self.__leadersboard = [(n, [], None)
+                               for n in self.get_all_player_names()]
 
     def get_leadersboard(self):
         return self.__leadersboard

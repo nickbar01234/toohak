@@ -75,9 +75,9 @@ class Utils:
         return textbox, textbox_border
 
     def draw_leadersboard(self, leadersboard: LeadersBoard, ref_rect: pg.Rect):
-        for idx, (name, n_questions) in enumerate(leadersboard):
+        for idx, (name, progress, _time) in enumerate(leadersboard):
             text = STYLE["font"]["text"].render(
-                f"{name}: {n_questions}", True, (0, 0, 0))
+                f"{name}: {len(progress)}", True, (0, 0, 0))
             text_rect = text.get_rect()
             text_rect.midtop = ref_rect.midbottom
             text_rect.top = ref_rect.bottom
@@ -126,7 +126,7 @@ class Utils:
         pg.draw.rect(self.screen, color, box)
         self.screen.blit(text_surface, text_rect)
 
-    def draw_leaderboard(self, ref_rect: pg.Rect, nquestions: int, leaderboard: list[tuple[str, list[bool], float | None]], display_correctness=False):
+    def draw_leaderboard(self, ref_rect: pg.Rect, nquestions: int, leaderboard: LeadersBoard, display_correctness=False):
         '''
         :param rect Relative anchor point
         :param nquestions Total number of questions
