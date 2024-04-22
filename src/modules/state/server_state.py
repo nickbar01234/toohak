@@ -42,15 +42,24 @@ class ServerState:
     def add_listener(self, listener):
         self.__listeners.append(listener)
 
-    def add_player(self, psocket: Socket, paddr: Addr, pname: Name, plock: threading.Lock):
+    def add_player(self, psocket: Socket, paddr: Addr, pname: Name, plock: threading.Lock) -> bool:
+        '''
+        Returns true if player is successfully added to the mapping and false otherwise.
+        '''
         logger.debug("Adding player {%s, %s, %s}", pname, psocket, paddr)
 
         with self.__player_states_lock:
-            self.__player_states[(psocket, paddr)] = (
-                pname, [], plock, threading.Semaphore(0))
+            unique = all(
+                map(lambda x: x[0] != pname, self.__player_states.values()))
 
-        logger.info("Added player {%s, %s, %s}",
-                    pname, psocket.getsockname(), paddr)
+            if unique:
+                self.__player_states[(psocket, paddr)] = (
+                    pname, [], plock, threading.Semaphore(0))
+
+                logger.info("Added player {%s, %s, %s}",
+                            pname, psocket.getsockname(), paddr)
+
+            return unique
 
     def remove_player(self, socket_addr: SocketAddr):
         with self.__player_states_lock:

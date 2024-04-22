@@ -35,9 +35,9 @@ class Network:
 
     def send_name(self, name):
         self.client.sendall(s.encode_name(name))
-        # TODO: match on received response to handle errors?
-        s.decode_name_response(self.client.recv(2048))
-        logger.info("Player's name is updated on the server.")
+        success = s.decode_name_response(self.client.recv(2048))
+        logger.info("[Player] %s name added to the server: %s", name, success)
+        return success
 
     def receive_questions(self) -> list[Question]:
         self.client.setblocking(True)

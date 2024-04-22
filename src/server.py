@@ -102,9 +102,14 @@ class Server:
                 "Listener thread started to listen from %s", player_addr)
 
             # finalize establishing connection by receiving player's name
-            player_name = self.receive_player_name(player_socket, player_lock)
-            self.__state.add_player(
-                player_socket, player_addr, player_name, player_lock)
+            player_name = s.decode_name(player_socket.recv(2048))
+            while not self.__state.add_player(player_socket, player_addr, player_name, player_lock):
+                with player_lock:
+                    player_socket.sendall(s.encode_name_response(False))
+                player_name = s.decode_name(player_socket.recv(2048))
+
+            with player_lock:
+                player_socket.sendall(s.encode_name_response(True))
 
             # Wait for game starts
             self.__state.player_wait_start_game(socket_addr)
@@ -212,14 +217,6 @@ class Server:
             self.__state.get_referee()[0].sendall(s.encode_leadersboard(
                 self.__state.get_leadersboard()))
         logger.info("Sent leadersboard to Referee")
-
-    def receive_player_name(self, player_socket: socket, player_lock: threading.Lock):
-        logger.debug("Decoding name")
-        player_name = s.decode_name(player_socket.recv(2048))
-        with player_lock:
-            player_socket.sendall(s.encode_name_response())
-
-            return player_name
 
 
 if __name__ == "__main__":
