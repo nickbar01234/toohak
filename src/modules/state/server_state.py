@@ -209,4 +209,4 @@ class ServerState:
 
     def get_final_results(self) -> LeadersBoard:
         with self.__player_states_lock:
-            return list(sorted(self.__results, key=lambda x: (sum(x[1]), x[2]), reverse=True))[:5]
+            return list(sorted(self.__results, key=lambda x: (-sum(x[1]), x[2])))[:5]
