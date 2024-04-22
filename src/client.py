@@ -40,7 +40,7 @@ class Client:
         }
 
         music_thread = threading.Thread(target=self.music_thread, daemon=True)
-        music_thread.start()
+        # music_thread.start()
 
         listener_thread = threading.Thread(
             target=self.listener, daemon=True)
