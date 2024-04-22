@@ -132,7 +132,7 @@ class Utils:
         leaderboard_box_width = self.screen.get_width() - leaderboard_margin_x * 2
         leaderboard_box_height = 256
         leaderboard_box = pg.Rect(
-            leaderboard_margin_x, 200 + leaderboard_margin_y, leaderboard_box_width, leaderboard_box_height)
+            leaderboard_margin_x, 100 + leaderboard_margin_y, leaderboard_box_width, leaderboard_box_height)
 
         return leaderboard_box
 

@@ -16,11 +16,11 @@ class MultipleChoiceQuestionBuilder(AbstractQuestionBuilder):
         return self
 
     def add_option(self, option):
-        self.__kwargs.setdefault("options", set()).add(option)
+        self.__kwargs.setdefault("options", []).append(option)
         return self
 
     def remove_option(self, option: str):
-        self.__kwargs.setdefault("options", set()).remove(option)
+        self.__kwargs.setdefault("options", []).remove(option)
         return self
 
     def add_solution(self, solution):

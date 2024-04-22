@@ -19,7 +19,7 @@ class Client:
 
         SCENES = {
             # TODO: EntryScene can remove network -> get from player's self.state
-            # SceneState.ENTRY: SelectQuestionSetScene(screen, self.state, self.network),
+            # SceneState.ENTRY: AddQuestionScene(screen, self.state, self.network),
             SceneState.ENTRY: EntryScene(screen, self.state, self.network),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
 
@@ -40,7 +40,7 @@ class Client:
         }
 
         music_thread = threading.Thread(target=self.music_thread, daemon=True)
-        music_thread.start()
+        # music_thread.start()
 
         listener_thread = threading.Thread(
             target=self.listener, daemon=True)

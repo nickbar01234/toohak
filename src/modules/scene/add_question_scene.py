@@ -1,6 +1,7 @@
 import sys
 import threading
 import pygame as pg
+import logging
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
@@ -9,8 +10,11 @@ from ..type.aliases import *
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 
-# TODO: implement a choice to opt for the default question set
 # TODO: review all questions added?
+# TODO: enforce a solution has to be selected?
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
 
 class AddQuestionScene(AbstractScene):
@@ -33,6 +37,7 @@ class AddQuestionScene(AbstractScene):
                 self.handle_quit(event)
 
                 self.__question_prompt.handle_event(event)
+                # Handle options
                 _ = [p.handle_event(event) for p in self.__option_prompts]
 
                 if event.type == pg.MOUSEBUTTONDOWN:
@@ -74,16 +79,24 @@ class AddQuestionScene(AbstractScene):
         # Collect the current question, options and solution
         builder = MultipleChoiceQuestionBuilder() .add_question(
             self.__question_prompt.get_content())
+        soln_builder = MultipleChoiceSolutionBuilder()
 
+        has_solution = False
         for option_prompt in self.__option_prompts:
-            builder = builder.add_option(
-                option_prompt.get_content())
-
-        builder = builder.add_solution(
-            MultipleChoiceSolutionBuilder().add_solution("TODO - THIS IS A PLACE HOLDER").build())
-        # TODO: implement a user-friendly way to select the solution!!
+            content = option_prompt.get_content()
+            builder = builder.add_option(content)
+            if option_prompt.get_correct_answer():
+                soln_builder = soln_builder.add_solution(content)
+                has_solution = True
+        if not has_solution:
+            builder = builder.add_solution(
+                MultipleChoiceSolutionBuilder().add_solution("PLACEHOLDER").build())
+            logger.warning("There's no correct answer for this question.")
+        else:
+            builder = builder.add_solution(soln_builder.build())
 
         question = builder.build()
+        logger.info("Question built: %s", question)
         return question
 
     #
@@ -111,14 +124,14 @@ class AddQuestionScene(AbstractScene):
         left_x = self.get_screen().get_width() // 4
         right_x = self.get_screen().get_width() // 4 * 3
         self.__option_prompts: list[PromptInput] = [
-            PromptInput(self.get_screen(), "Option A: ",
-                        dimension=(512, 64), top_y=250, top_x=left_x),
-            PromptInput(self.get_screen(), "Option B: ",
-                        dimension=(512, 64), top_y=250, top_x=right_x),
-            PromptInput(self.get_screen(), "Option C: ",
-                        dimension=(512, 64), top_y=435, top_x=left_x),
-            PromptInput(self.get_screen(), "Option D: ",
-                        dimension=(512, 64), top_y=435, top_x=right_x),
+            PromptInput(self.get_screen(), "Option A: ", dimension=(
+                512, 64), top_y=250, top_x=left_x, add_check_box=True),
+            PromptInput(self.get_screen(), "Option B: ", dimension=(
+                512, 64), top_y=250, top_x=right_x, add_check_box=True),
+            PromptInput(self.get_screen(), "Option C: ", dimension=(
+                512, 64), top_y=435, top_x=left_x, add_check_box=True),
+            PromptInput(self.get_screen(), "Option D: ", dimension=(
+                512, 64), top_y=435, top_x=right_x, add_check_box=True),
         ]
 
     def __submit(self):
