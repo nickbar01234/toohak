@@ -87,14 +87,8 @@ class QuestionScene(AbstractScene):
                 self.get_screen().blit(select_text, select_rect)
                 question_rect = select_rect
 
-            leaderboard_margin_x = 64
-            leaderboard_margin_y = 32
-            leaderboard_box_width = self.get_screen().get_width() - leaderboard_margin_x * 2
-            leaderboard_box_height = 256
-            leaderboard_box = pg.Rect(
-                leaderboard_margin_x, question_rect.height + leaderboard_margin_y, leaderboard_box_width, leaderboard_box_height)
-
-            self.get_utils().draw_leaderboard(leaderboard_box, 20,
+            leaderboard_box = self.get_utils().create_leaderboard_box()
+            self.get_utils().draw_leaderboard(leaderboard_box, len(self.get_player_state().get_questions()),
                                               self.get_player_state().get_leadersboard())
 
             # draw all options

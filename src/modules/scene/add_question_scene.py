@@ -32,7 +32,6 @@ class AddQuestionScene(AbstractScene):
             for event in pg.event.get():
                 self.handle_quit(event)
 
-
                 self.__question_prompt.handle_event(event)
                 _ = [p.handle_event(event) for p in self.__option_prompts]
 
@@ -44,7 +43,7 @@ class AddQuestionScene(AbstractScene):
                         for sender in self.senders:
                             sender.join()
                         self.get_network().send_confirm()  # sync
-
+                        self.get_player_state().referee_barrier.release()
                         return SceneState.REFEREE_START_SCENE
 
                     elif self.add_box.collidepoint(event.pos):
@@ -66,7 +65,6 @@ class AddQuestionScene(AbstractScene):
     #
     def __collect_and_send_current_question(self):
         question = self.__build_and_add_question()
-
         sender = threading.Thread(
             target=self.get_network().send_question, args=[question])
         self.senders.append(sender)

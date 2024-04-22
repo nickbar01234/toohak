@@ -17,14 +17,8 @@ class QuitScene(AbstractScene):
 
             self.get_screen().fill("white")
 
-            for idx, (name, n_questions) in enumerate(self.get_player_state().get_leadersboard()):
-                text = STYLE["font"]["text"].render(
-                    f"{name}: {n_questions}", True, (0, 0, 0))
-                text_rect = text.get_rect()
-                text_rect.midtop = button_border.midbottom
-                text_rect.top = button_border.bottom
-                text_rect = text_rect.move(0, button_border.height + idx * 32)
-                self.get_screen().blit(text, text_rect)
+            # self.get_utils().draw_results(
+            #     button_border, self.get_player_state().get_leadersboard(), len(self.get_player_state().get_questions()))
 
             self.get_utils().create_prompt("Thanks for playing!",
                                            (0, self.get_screen().get_height() // 8))
@@ -37,5 +31,10 @@ class QuitScene(AbstractScene):
             quit_rect = quit_text.get_rect()
             quit_rect.center = button.center
             self.get_screen().blit(quit_text, quit_rect)
+
+            leaderboard_box = self.get_utils().create_leaderboard_box()
+            leaderboard_box.top = quit_rect.bottom + 64
+            self.get_utils().draw_leaderboard(leaderboard_box, len(self.get_player_state().get_questions()),
+                                              self.get_player_state().get_leadersboard(), True)
 
             pg.display.flip()

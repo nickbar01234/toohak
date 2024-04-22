@@ -155,8 +155,11 @@ class Server:
 
                 referee_socket.sendall(s.encode_ack(
                     "Referee's confirmatino on questions received"))
+                referee_socket.sendall(s.encode_questions(
+                    self.__state.get_questions()))
             else:
-                self.__state.choose_question_set(question_set)
+                question_set = self.__state.choose_question_set(question_set)
+                referee_socket.sendall(s.encode_questions(question_set))
 
             # Referee choose to start game
             s.decode_referee_startgame(referee_socket.recv(1024))

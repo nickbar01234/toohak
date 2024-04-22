@@ -38,6 +38,7 @@ class SelectQuestionSetScene(AbstractScene):
                                   self.question_names[self.choice])
                             self.get_network().choose_default_or_customized(self.choice)
                             if self.choice < len(self.question_names) - 1:
+                                self.get_player_state().referee_barrier.release()
                                 return SceneState.REFEREE_START_SCENE
                             else:
                                 return SceneState.REFEREE_ADD_QUESTION
