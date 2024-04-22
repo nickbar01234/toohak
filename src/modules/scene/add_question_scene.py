@@ -88,6 +88,7 @@ class AddQuestionScene(AbstractScene):
             builder = builder.add_option(content)
             if option_prompt.get_correct_answer():
                 soln_builder = soln_builder.add_solution(content)
+                has_solution = True
         if not has_solution:
             builder = builder.add_solution(
                 MultipleChoiceSolutionBuilder().add_solution("PLACEHOLDER").build())

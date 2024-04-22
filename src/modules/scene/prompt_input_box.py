@@ -66,11 +66,12 @@ class PromptInput:
         # draw the checkbox if needed
         if self.add_check_box:
             if self.correct_answer:
+                color = "green4"
                 border, inner = self.check_box_triple
-                pg.draw.rect(screen, "green", border)
+                pg.draw.rect(screen, color, border)
 
                 text_surface = STYLE["font"]["text"].render(
-                    "Correct Answer!", True, "green")
+                    "Correct Answer!", True, color)
                 text_rect = text_surface.get_rect()
                 text_rect.topleft = border.topright
                 screen.blit(text_surface, text_rect)
