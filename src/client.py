@@ -35,7 +35,8 @@ class Client:
             SceneState.REFEREE_CHOOSE_QUESTION_SET: SelectQuestionSetScene(screen, self.state, self.network),
             SceneState.REFEREE_START_SCENE: RefreeStartScene(screen, self.state, self.network),
             SceneState.REFEREE_ADD_QUESTION: AddQuestionScene(screen, self.state, self.network),
-            SceneState.REFEREE_MONITOR: MonitorScene(screen, self.state, self.network),
+            SceneState.REFEREE_MONITOR: MonitorScene(
+                screen, self.state, self.network)
         }
 
         music_thread = threading.Thread(target=self.music_thread, daemon=True)
@@ -109,6 +110,9 @@ class Client:
                 logger.info(
                     "Leader's board updated: {%s}", self.state.get_leadersboard())
                 game_continues, leadersboard = self.network.receive_leadersboard_or_game_ends()
+
+            self.state.set_leadersboard(leadersboard)
+            self.state.is_game_end = True
 
             logger.info("Received update from server: Game ends")
         except Exception as e:
