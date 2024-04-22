@@ -11,6 +11,7 @@ class NameScene(AbstractScene):
         # TODO(nickbar01234) - Need to extract into a input class
         clock = pygame.time.Clock()
         name = ""
+        failed_name = ""
         active = False
         while True:
             textbox, textbox_border = self.get_utils().create_textbox()
@@ -25,9 +26,11 @@ class NameScene(AbstractScene):
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        self.get_network().send_name(name)
-                        self.get_player_state().player_start_barrier.release()
-                        return SceneState.PLAYER_WAIT_START_ROOM
+                        if self.get_network().send_name(name):
+                            self.get_player_state().player_start_barrier.release()
+                            return SceneState.PLAYER_WAIT_START_ROOM
+                        else:
+                            failed_name = name
                     elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
                         name = pyperclip.paste()
                     elif event.key == pygame.K_BACKSPACE:
@@ -48,6 +51,15 @@ class NameScene(AbstractScene):
             # TODO(nickbar01234) - Handle clip text
             self.get_screen().blit(text_surface, (textbox.x + padding_x,
                                                   textbox.y + textbox.height // 2 - padding_y))
+
+            if failed_name == name and len(name) > 0:
+                error_msg = STYLE["font"]["text"].render(
+                    f"'{failed_name}' has been taken on the server", True, "red")
+                error_msg_rect = error_msg.get_rect()
+                error_msg_rect.top = textbox_border.bottom + 16
+                error_msg_rect.left = textbox_border.left
+                self.get_screen().blit(error_msg, error_msg_rect)
+
             pygame.display.flip()
 
             clock.tick(STYLE["fps"])

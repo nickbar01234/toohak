@@ -87,8 +87,8 @@ def decode_name(data: bytes) -> Name:
     return decode(data, NAME)
 
 
-def encode_name_response():
-    return encode(NAME, SUCCESS)
+def encode_name_response(success: bool):
+    return encode(NAME, SUCCESS if success else FAILURE)
 
 
 def decode_name_response(data: bytes) -> bool:
