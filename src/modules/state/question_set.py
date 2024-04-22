@@ -60,7 +60,7 @@ demo_questions = [
     .build(),
 
     MultipleChoiceQuestionBuilder()
-    .add_question("Which of the following is the \"Four Great Inventions\" of ancient China?")
+    .add_question("The \"Four Great Inventions\" of ancient China are:")
     .add_option("Paper, Printing, Gunpowerder, Silk")
     .add_option("Compass, Paper, Fireworks, Printing")
     .add_option("Gunpowder, Kites, Printing, Paper")
