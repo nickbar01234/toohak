@@ -1,11 +1,12 @@
 import pygame as pg
 from .abstract_scene import AbstractScene
 from .styles import STYLE
+from .scene_state import SceneState
 
 
 class MonitorScene(AbstractScene):
     def start_scene(self):
-        while True:
+        while not self.get_player_state().is_game_end:
             for event in pg.event.get():
                 self.handle_quit(event)
 
@@ -21,3 +22,5 @@ class MonitorScene(AbstractScene):
             self.get_utils().draw_leaderboard(leaderboard_box, len(self.get_player_state().get_questions()),
                                               self.get_player_state().get_leadersboard(), display_correctness=True)
             pg.display.flip()
+
+        return SceneState.QUIT

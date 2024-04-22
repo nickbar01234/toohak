@@ -6,7 +6,6 @@ from .styles import STYLE
 
 class QuitScene(AbstractScene):
     def start_scene(self):
-
         button, button_border = self.get_utils().create_button((0, -100))
         while True:
             for event in pg.event.get():

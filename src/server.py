@@ -66,6 +66,8 @@ class Server:
         self.__state.wait_end()
         self.broadcast_without_ack("Broadcasting final results", s.encode_endgame(
             self.__state.get_final_results()))
+        self.__state.get_referee()[0].sendall(s.encode_endgame(
+            self.__state.get_final_results()))
 
     def listener(self, client: socket.socket, addr):
         logger.info("Listening from %s", addr)
