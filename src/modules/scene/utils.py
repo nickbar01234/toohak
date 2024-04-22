@@ -189,3 +189,13 @@ class Utils:
                     elapsed_rect = elapsed_text.get_rect()
                     elapsed_rect.topleft = (elapsed_left, elapsed_top)
                     self.screen.blit(elapsed_text, elapsed_rect)
+
+    def draw_results(self, button_border: pg.Rect, leadersboard: LeadersBoard, num_qs: int):
+        for idx, (name, n_questions) in enumerate(leadersboard):
+            text = STYLE["font"]["text"].render(
+                f"{name}: {n_questions}/{num_qs}", True, (0, 0, 0))
+            text_rect = text.get_rect()
+            text_rect.midtop = button_border.midbottom
+            text_rect.top = button_border.bottom
+            text_rect = text_rect.move(0, button_border.height + idx * 32)
+            self.screen.blit(text, text_rect)
