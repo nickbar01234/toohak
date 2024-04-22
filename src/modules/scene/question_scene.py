@@ -70,7 +70,7 @@ class QuestionScene(AbstractScene):
             self.get_screen().fill("white")
 
             question_rect = self.get_utils().create_prompt(
-                self.curr_question.get_question(), (0, 0), "question")
+                self.curr_question.get_question(), (0, 50), "question")
 
             question_number_text = STYLE["font"]["text"].render(
                 f"Question {self.q_idx + 1} / {len(self.get_player_state().get_questions())}", True, pg.Color("#949494"))

@@ -145,25 +145,33 @@ class Utils:
         '''
 
         left_anchor, top_anchor = ref_rect.topleft
-        left_anchor += 128
-        box_width = box_height = 48
+        left_anchor += 250
         box_margin_x = 6
         box_margin_y = 3
         box_radius = 2
+        box_height = 24
+        text_margin = 20
+
+        leaderboard_width = self.screen.get_width() * .4
+        left_anchor = self.screen.get_rect().centerx - leaderboard_width // 2
+        text_right = left_anchor - text_margin
+
+        nquestions_adjusted = nquestions if nquestions > 0 else 1
+        box_width = leaderboard_width / nquestions_adjusted
 
         for row, (name, progress, elapsed) in enumerate(leaderboard):
             padded_progress = [None if i >= len(
-                progress) else progress[i] for i in range(nquestions)]
+                progress) else progress[i] for i in range(nquestions_adjusted)]
 
             text_name = STYLE["font"]["text"].render(name, True, "black")
             text_name_rect = text_name.get_rect()
             text_name_rect.top = top_anchor + row * \
                 (box_height + box_margin_x) + box_height // 2 - 6
-            text_name_rect.left = ref_rect.left
+            text_name_rect.right = text_right
             self.screen.blit(text_name, text_name_rect)
 
             for col, correct in enumerate(padded_progress):
-                box_left = left_anchor + col * (box_width + box_margin_y)
+                box_left = left_anchor + col * (box_width - box_radius)
                 box_top = top_anchor + row * (box_height + box_margin_x)
                 box_border = pg.Rect(box_left, box_top, box_width, box_height)
                 box = pg.Rect(box_border.left + box_radius, box_border.top + box_radius,
