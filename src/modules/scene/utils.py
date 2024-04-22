@@ -126,13 +126,13 @@ class Utils:
         pg.draw.rect(self.screen, color, box)
         self.screen.blit(text_surface, text_rect)
 
-    def create_leaderboard_box(self):
+    def create_leaderboard_box(self, fromtop: int = 100):
         leaderboard_margin_x = 64
         leaderboard_margin_y = 32
         leaderboard_box_width = self.screen.get_width() - leaderboard_margin_x * 2
         leaderboard_box_height = 256
         leaderboard_box = pg.Rect(
-            leaderboard_margin_x, 100 + leaderboard_margin_y, leaderboard_box_width, leaderboard_box_height)
+            leaderboard_margin_x, fromtop + leaderboard_margin_y, leaderboard_box_width, leaderboard_box_height)
 
         return leaderboard_box
 
