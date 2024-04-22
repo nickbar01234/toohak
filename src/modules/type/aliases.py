@@ -11,6 +11,6 @@ Time = float | None
 PlayerProgress = list[bool]
 PlayerStates = dict[tuple[Socket, Addr],
                     tuple[Name, PlayerProgress, Lock, Lock]]
-LeadersBoard = list[tuple[str, PlayerProgress, Time]]
-# Results = list[tuple[Name, int, int]]  # (name, correct, elapsed)
+LeadersBoard = list[tuple[Name, PlayerProgress, Time]]
+Results = list[tuple[Name, int, int]]  # (name, correct, elapsed)
 Question = abstract_question.AbstractQuestion

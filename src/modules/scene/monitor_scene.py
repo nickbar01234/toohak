@@ -19,5 +19,5 @@ class MonitorScene(AbstractScene):
 
             leaderboard_box = self.get_utils().create_leaderboard_box()
             self.get_utils().draw_leaderboard(leaderboard_box, 20,
-                                              self.get_player_state().get_leadersboard())
+                                              self.get_player_state().get_leadersboard(), display_correctness=True)
             pg.display.flip()
