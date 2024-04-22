@@ -56,6 +56,7 @@ class Network:
         return leadersboard
 
     def receive_leadersboard_or_game_ends(self) -> tuple[bool, LeadersBoard]:
+        self.client.setblocking(True)
         data = self.client.recv(2048)
         return s.decode_update_or_endgame(data)
 

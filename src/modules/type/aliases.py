@@ -7,9 +7,10 @@ Addr = str
 Socket = socket.socket
 SocketAddr = tuple[Socket, Addr]
 Lock = threading.Lock
+Time = float | None
 PlayerProgress = list[bool]
 PlayerStates = dict[tuple[Socket, Addr],
                     tuple[Name, PlayerProgress, Lock, Lock]]
-LeadersBoard = list[tuple[Name, int]]
+LeadersBoard = list[tuple[Name, PlayerProgress, Time]]
 Results = list[tuple[Name, int, int]]  # (name, correct, elapsed)
 Question = abstract_question.AbstractQuestion

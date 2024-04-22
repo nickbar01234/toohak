@@ -66,6 +66,8 @@ class Server:
         self.__state.wait_end()
         self.broadcast_without_ack("Broadcasting final results", s.encode_endgame(
             self.__state.get_final_results()))
+        self.__state.get_referee()[0].sendall(s.encode_endgame(
+            self.__state.get_final_results()))
 
     def listener(self, client: socket.socket, addr):
         logger.info("Listening from %s", addr)
@@ -155,8 +157,11 @@ class Server:
 
                 referee_socket.sendall(s.encode_ack(
                     "Referee's confirmatino on questions received"))
+                referee_socket.sendall(s.encode_questions(
+                    self.__state.get_questions()))
             else:
-                self.__state.choose_question_set(question_set)
+                question_set = self.__state.choose_question_set(question_set)
+                referee_socket.sendall(s.encode_questions(question_set))
 
             # Referee choose to start game
             s.decode_referee_startgame(referee_socket.recv(1024))

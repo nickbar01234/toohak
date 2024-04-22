@@ -3,6 +3,7 @@ import pyperclip
 from .abstract_scene import AbstractScene
 from .scene_state import SceneState
 from .styles import STYLE
+from ..validator.validator import is_valid_ip
 
 
 class EntryScene(AbstractScene):
@@ -24,15 +25,17 @@ class EntryScene(AbstractScene):
                     active = textbox.collidepoint(event.pos)
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+                    if event.key == pygame.K_RETURN and is_valid_ip(ip):
                         self.get_network().connect(ip)
                         return SceneState.ROLE_SELECTION
-                    elif event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
-                        ip = pyperclip.paste()
-                    elif event.key == pygame.K_BACKSPACE:
-                        ip = ip[:-1]
-                    else:
-                        ip += event.unicode
+
+                    if active:
+                        if event.key == pygame.K_v and (event.mod & pygame.KMOD_CTRL or event.mod & pygame.KMOD_META):
+                            ip = pyperclip.paste()
+                        elif event.key == pygame.K_BACKSPACE:
+                            ip = ip[:-1]
+                        else:
+                            ip += event.unicode
 
             self.get_screen().fill("white")
 
@@ -47,6 +50,15 @@ class EntryScene(AbstractScene):
             # TODO(nickbar01234) - Handle clip text
             self.get_screen().blit(text_surface, (textbox.x + padding_x,
                                                   textbox.y + textbox.height // 2 - padding_y))
+
+            if len(ip) > 0 and not is_valid_ip(ip):
+                warning_text = STYLE["font"]["question"].render(
+                    "IP address must be 'x.x.x.x:port', where 0 <= x <= 255", True, "red")
+                warning_text_rect = warning_text.get_rect()
+                warning_text_rect.midtop = textbox_border.midbottom
+                warning_text_rect.y += 20
+                self.get_screen().blit(warning_text, warning_text_rect)
+
             pygame.display.flip()
 
             clock.tick(STYLE["fps"])

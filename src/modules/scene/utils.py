@@ -19,6 +19,7 @@ class Utils:
         rect.midtop = self.screen.get_rect().midtop
         rect = rect.move(*margin)
         self.screen.blit(text, rect)
+        return rect
 
     # new - create the prompt and input box together
     def create_prompt_with_inputbox(self,
@@ -46,11 +47,11 @@ class Utils:
     def draw_prompt_with_inputbox(self, active, filled):
         self.screen.blit(*self.prompt)
 
-        pg.draw.rect(self.get_screen(),
+        pg.draw.rect(self.screen,
                      pg.Color("#00FF00") if filled
                      else pg.Color("#8489FBFF") if active
                      else "black", self.question_box_border)
-        pg.draw.rect(self.get_screen(), "white", self.question_box)
+        pg.draw.rect(self.screen, "white", self.question_box)
 
     def create_textbox(self, dimension: tuple[int, int] = (512, 64), border: int = 3):
         textbox_border = pg.Rect(0, 0, *dimension)
@@ -74,9 +75,9 @@ class Utils:
         return textbox, textbox_border
 
     def draw_leadersboard(self, leadersboard: LeadersBoard, ref_rect: pg.Rect):
-        for idx, (name, n_questions) in enumerate(leadersboard):
+        for idx, (name, progress, _time) in enumerate(leadersboard):
             text = STYLE["font"]["text"].render(
-                f"{name}: {n_questions}", True, (0, 0, 0))
+                f"{name}: {len(progress)}", True, (0, 0, 0))
             text_rect = text.get_rect()
             text_rect.midtop = ref_rect.midbottom
             text_rect.top = ref_rect.bottom
@@ -124,3 +125,79 @@ class Utils:
                               color: str = "lightblue"):
         pg.draw.rect(self.screen, color, box)
         self.screen.blit(text_surface, text_rect)
+
+    def create_leaderboard_box(self):
+        leaderboard_margin_x = 64
+        leaderboard_margin_y = 32
+        leaderboard_box_width = self.screen.get_width() - leaderboard_margin_x * 2
+        leaderboard_box_height = 256
+        leaderboard_box = pg.Rect(
+            leaderboard_margin_x, 200 + leaderboard_margin_y, leaderboard_box_width, leaderboard_box_height)
+
+        return leaderboard_box
+
+    def draw_leaderboard(self, ref_rect: pg.Rect, nquestions: int, leaderboard: LeadersBoard, display_correctness=False):
+        '''
+        :param rect Relative anchor point
+        :param nquestions Total number of questions
+
+        :note Doesn't work with more than 20 questions
+        '''
+
+        left_anchor, top_anchor = ref_rect.topleft
+        left_anchor += 128
+        box_width = box_height = 48
+        box_margin_x = 6
+        box_margin_y = 3
+        box_radius = 2
+
+        for row, (name, progress, elapsed) in enumerate(leaderboard):
+            padded_progress = [None if i >= len(
+                progress) else progress[i] for i in range(nquestions)]
+
+            text_name = STYLE["font"]["text"].render(name, True, "black")
+            text_name_rect = text_name.get_rect()
+            text_name_rect.top = top_anchor + row * \
+                (box_height + box_margin_x) + box_height // 2 - 6
+            text_name_rect.left = ref_rect.left
+            self.screen.blit(text_name, text_name_rect)
+
+            for col, correct in enumerate(padded_progress):
+                box_left = left_anchor + col * (box_width + box_margin_y)
+                box_top = top_anchor + row * (box_height + box_margin_x)
+                box_border = pg.Rect(box_left, box_top, box_width, box_height)
+                box = pg.Rect(box_border.left + box_radius, box_border.top + box_radius,
+                              box_width - box_radius * 2, box_height - box_radius * 2)
+
+                pg.draw.rect(self.screen, "black", box_border, box_radius, 2)
+                if display_correctness:
+                    if correct is not None:
+                        pg.draw.rect(
+                            self.screen, pg.Color("#00FF00") if correct else pg.Color("#FF1B2d"), box)
+                    else:
+                        # Padded
+                        pg.draw.rect(self.screen, "white", box)
+                else:
+                    pg.draw.rect(self.screen, pg.Color("#d3d3d3") if col <
+                                 len(progress) else "white", box)
+
+                if elapsed is not None:
+                    elapsed_left = left_anchor + \
+                        nquestions * (box_width + box_margin_y) + 16
+                    elapsed_top = top_anchor + row * \
+                        (box_height + box_margin_x) + box_height // 2 - 8
+                    elapsed_text = STYLE["font"]["text"].render(
+                        f"{round(elapsed, 2)}s", False, "black")
+                    elapsed_rect = elapsed_text.get_rect()
+                    elapsed_rect.topleft = (elapsed_left, elapsed_top)
+                    self.screen.blit(elapsed_text, elapsed_rect)
+
+    def draw_results(self, button_border: pg.Rect, leadersboard: LeadersBoard, num_qs: int):
+        for idx, (name, n_questions) in enumerate(leadersboard):
+            text = STYLE["font"]["text"].render(
+                f"{name}: {n_questions}/{num_qs}", True, (0, 0, 0))
+            text_rect = text.get_rect()
+            text_rect.midtop = button_border.midbottom
+            text_rect.top = button_border.bottom
+            text_rect = text_rect.move(0, button_border.height + idx * 32)
+            self.screen.blit(text, text_rect)

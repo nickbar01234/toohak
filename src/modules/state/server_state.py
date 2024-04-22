@@ -23,7 +23,7 @@ class ServerState:
         # leadersboard states
         self.__leadersboard: LeadersBoard = []
         self.__top5players: LeadersBoard = []
-        self.__results: Results = []
+        self.__results: LeadersBoard = []
 
         # only main thread should access
         # TODO(nickbar01234) - Should clean up threads
@@ -97,23 +97,24 @@ class ServerState:
             self.__player_states[socket_addr] = name, new_progress, lock, game_start_lock
             logger.info(
                 "Player {%s} progress has been updated: %s", name, new_progress)
-        self.__update_leadersboard(name, len(new_progress))
+        self.__update_leadersboard(name, new_progress)
 
     # Return the updated top5players if there's a non-trivial update, otherwise return None
-    def __update_leadersboard(self, name: str, player_progress: int):
-        logger.debug(f"Updating leaderboard from {self.__leadersboard}")
+    def __update_leadersboard(self, name: str, player_progress: PlayerProgress):
+        logger.debug("Updating leaderboard from %s", self.__leadersboard)
         with self.__player_states_lock:
             logger.debug("Input %s %s", name, player_progress)
             filtered_list = list(
                 filter(lambda x: x[0] != name, self.__leadersboard))
             logger.debug("Filtered %s", filtered_list)
-            filtered_list.append((name, player_progress))
+            filtered_list.append((name, player_progress, None))
             self.__leadersboard = sorted(filtered_list,
-                                         key=lambda x: x[1], reverse=True)
-        logger.debug(f"Updating leaderboard to {self.__leadersboard}")
+                                         key=lambda x: len(x[1]), reverse=True)
+        logger.debug("Updating leaderboard to %s", self.__leadersboard)
 
     def init_leadersboard(self):
-        self.__leadersboard = [(n, 0) for n in self.get_all_player_names()]
+        self.__leadersboard = [(n, [], None)
+                               for n in self.get_all_player_names()]
 
     def get_leadersboard(self):
         return self.__leadersboard
@@ -165,6 +166,7 @@ class ServerState:
     def choose_question_set(self, idx: int):
         with self.__questions_lock:
             self.__questions = QUESTIONS[idx]
+            return self.__questions
 
     def wait_game_start(self):
         self.__game_starts.acquire()
@@ -172,11 +174,11 @@ class ServerState:
     def signal_game_start(self):
         self.__game_starts.release()
 
-    def update_end_results(self, addr: SocketAddr, seconds: int):
+    def update_end_results(self, addr: SocketAddr, seconds: float):
         with self.__player_states_lock:
             if addr in self.__player_states:
                 name, progress, _, _ = self.__player_states[addr]
-                self.__results.append((name, sum(progress), seconds))
+                self.__results.append((name, progress, seconds))
 
     def wait_end(self):
         self.__game_ends.acquire()
@@ -198,4 +200,4 @@ class ServerState:
 
     def get_final_results(self) -> LeadersBoard:
         with self.__player_states_lock:
-            return list(map(lambda x: (x[0], x[1]), sorted(self.__results, key=lambda x: (x[1], x[2]), reverse=True)))[:5]
+            return list(sorted(self.__results, key=lambda x: (sum(x[1]), x[2]), reverse=True))[:5]

@@ -35,6 +35,8 @@ class PlayerState:
         self.player_start_barrier = threading.Semaphore(0)
         self.role_selection_barrier = threading.Semaphore(0)
         self.game_end_barrier = threading.Semaphore(0)
+        self.referee_barrier = threading.Semaphore(0)
+        self.is_game_end = False
 
         # TODO(nickbar01234) - Should this state be here?
         self.__is_player = True
