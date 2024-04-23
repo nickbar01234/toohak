@@ -112,8 +112,10 @@ class QuestionScene(AbstractScene):
         inner_box = pg.Rect(self.container.left + border, self.container.top + border,
                             self.container.width - border * 2, self.container.height - border * 2)
         pg.draw.rect(self.get_screen(), "white", inner_box)
+
+        mouse_pos = pg.mouse.get_pos()
         for i, (option, box) in enumerate(zip(self.curr_options, self.boxes)):
-            selected = option in self.selected
+            selected = option in self.selected or box.collidepoint(mouse_pos)
             color_scheme = STYLE["box_colors"][i % len(STYLE["box_colors"])]
             pg.draw.rect(self.get_screen(
             ), color_scheme["active"] if selected else color_scheme["default"], box)

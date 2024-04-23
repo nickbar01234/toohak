@@ -54,14 +54,15 @@ STYLE: StyleType = {
     "fps": 60,
     "box_colors": [
         # Red
-        {"active": pygame.Color("#913831"), "default": "red"},
+        {"active": pygame.Color("#913831"), "default": "lightcoral"},
         # Green
         {"active": pygame.Color("#097969"),
-         "default": pygame.Color("#5F9EA0")},
+         "default": pygame.Color("lightgreen")},
         # Blue
         {"active": pygame.Color("#00008B"),
-         "default": pygame.Color("#A7C7E7")},
+         "default": pygame.Color("lightskyblue")},
         # Yellow
-        {"active": pygame.Color("#FFD700"), "default": pygame.Color("#FCF55F")}
+        {"active": pygame.Color("orange"),
+         "default": pygame.Color("lightgoldenrod")}
     ]
 }

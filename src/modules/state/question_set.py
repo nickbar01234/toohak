@@ -26,22 +26,22 @@ easy_questions = [
 demo_questions = [
 
     MultipleChoiceQuestionBuilder()
-    .add_question("Which city is not a capital city of a country?")
+    .add_question("Which cities are a capital city of a country?")
     .add_option("Stockholm")
     .add_option("Zurich")
     .add_option("Prague")
     .add_option("Budapest")
-    .add_solution(MultipleChoiceSolutionBuilder().add_solution("Zurich").build())
+    .add_solution(MultipleChoiceSolutionBuilder().add_solution("Stockholm").add_solution("Prague").add_solution("Budapest").build())
     .build(),
 
-    MultipleChoiceQuestionBuilder()
-    .add_question("Which term does not belong in the following group?")
-    .add_option("Semaphore")
-    .add_option("Mutex")
-    .add_option("Thread")
-    .add_option("Condition variable")
-    .add_solution(MultipleChoiceSolutionBuilder().add_solution("Thread").build())
-    .build(),
+    # MultipleChoiceQuestionBuilder()
+    # .add_question("Which term does not belong in the following group?")
+    # .add_option("Semaphore")
+    # .add_option("Mutex")
+    # .add_option("Thread")
+    # .add_option("Condition variable")
+    # .add_solution(MultipleChoiceSolutionBuilder().add_solution("Thread").build())
+    # .build(),
 
     MultipleChoiceQuestionBuilder()
     .add_question("If 6+4=210, 9+2=711, and 8+5=313, then 5+2=?")
