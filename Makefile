@@ -9,10 +9,10 @@ install: requirements.txt
 	$(PYTHON) -m pip install -r requirements.txt
 
 client: install
-	.venv/bin/python3.12 src/client.py
+	python3.12 src/client.py
 
 server: install
-	.venv/bin/python3.12 src/server.py
+	python3.12 src/server.py
 
 test:
 	cd $(SRC) && python3 -m unittest		
