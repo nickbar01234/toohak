@@ -5,7 +5,7 @@ SRC=src
 .PHONY: clean install test
 
 install: requirements.txt
-	python3 -m venv $(VENV);
+	python3.12 -m venv $(VENV);
 	$(PYTHON) -m pip install -r requirements.txt
 
 client: install
