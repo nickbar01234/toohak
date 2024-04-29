@@ -18,7 +18,6 @@ class PlayerState:
     def __init__(self, network):
 
         # TODO - Change type hint for network
-        self.__network = network
         self.__name = None
 
         self.__questions: list[Question] = []
