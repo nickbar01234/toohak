@@ -15,10 +15,9 @@ class GameState(Enum):
 
 
 class PlayerState:
-    def __init__(self, network):
+    def __init__(self):
 
         # TODO - Change type hint for network
-        self.__network = network
         self.__name = None
 
         self.__questions: list[Question] = []
