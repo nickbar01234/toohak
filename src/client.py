@@ -10,7 +10,7 @@ logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 class Client:
     def __init__(self):
         self.network = Network()
-        self.state = PlayerState(self.network)
+        self.state = PlayerState()
 
     def start(self):
         screen = pg.display.set_mode((STYLE["width"], STYLE["height"]))
