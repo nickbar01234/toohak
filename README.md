@@ -1,5 +1,10 @@
 # toohak
 
+Toohak is a distributed online competition game inspired by Kahoot. The game
+enables multiple players to participate simultaneously, answering the same set
+of questions at their own pace and viewing a leaderboard that displays the top
+five players' progress.
+
 ## Installation
 
 To run the game, make sure that your Python version is **3.12** or above. From
@@ -55,3 +60,11 @@ Let’s go through each directory / file by their functionality:
   - state: Defines and exports ServerState and PlayerState to be used by server.py and client.py.
   - type: Defines global type aliases for code clarity since we use type annotation heavily.
   - validator: Validates IP address.
+
+## Precautions
+
+> ❌ Do not quit the game mid-way. This would result in an unpredictable state, where the client would deadlock on the final scene.
+
+> ⚠️ The server needs to be restarted after completing 1 round.
+
+> ⚠️ Players can't join mid-game.
