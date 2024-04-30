@@ -23,9 +23,6 @@ class QuestionScene(AbstractScene):
         self.submit_box, self.submit_box_text, self.submit_text_surface = self.get_utils(
         ).create_submit_box()
 
-        # TODO: ensure the player selects at least one option
-        # TODO: add a box that encloses the option boxes
-
         self.get_player_state().set_init_time()
 
         while True:

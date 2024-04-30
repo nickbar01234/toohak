@@ -159,7 +159,6 @@ def encode_confirm_questions():
 #
 
 
-# TODO: global type aliases
 def encode_startgame(init_top5players: LeadersBoard):
     return encode(START, init_top5players)
 
@@ -168,10 +167,8 @@ def decode_startgame(data: bytes):
     return decode(data, START)
 
 #
-# Message Protocol for updating leaders' board TODO: testing
+# Message Protocol for updating leaders' board
 #
-
-# TODO: global file to share type?
 
 
 def encode_leadersboard(top5players: LeadersBoard):
@@ -186,7 +183,7 @@ def decode_leadersboard(data: bytes) -> LeadersBoard:
 # Message Protocol for updating player's progress
 #
 
-def encode_progress(progress: PlayerProgress):  # TODO: global file to share type?
+def encode_progress(progress: PlayerProgress):
     return encode(INDIVIDUAL_PROGRESS, progress)
 
 

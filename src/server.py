@@ -37,10 +37,7 @@ class Server:
         except KeyboardInterrupt:
             server_socket.close()
         # TODO: add a graceful way to terminate the server & wait for the player threads (I.e. exit while loop)?
-        # for listener in self.__playerListeners:
-        #     listener.join()
 
-    # TODO: tell referee to quit when game ends
     def game_starter_thread(self):
         # TODO(nickbar01234) - Restart game thread to play another round?
         logger.info("Thread started to monitor the game_starting state.")
@@ -51,7 +48,7 @@ class Server:
         self.broadcast_with_ack("distribute questions", s.encode_questions(
             self.__state.get_questions()))
 
-        # Broadcast to all players that the game has started TODO: how do we make sure all player threads have unblocked at this point?
+        # Broadcast to all players that the game has started
         self.__state.init_leadersboard()
         init_top5players = self.__state.get_top5()
         self.broadcast_with_ack(
@@ -92,9 +89,8 @@ class Server:
             case "referee":
                 return self.referee_listener(client, addr)
 
-    # For each listener's thread to receive message form a specific player
-
     def player_listener(self, player_socket: Socket, player_addr: Addr):
+        # For each listener's thread to receive message form a specific player
         try:
             socket_addr = (player_socket, player_addr)
             player_lock = threading.Lock()
@@ -142,7 +138,6 @@ class Server:
             logger.info(
                 "Referee thread started to listen from %s", referee_addr)
 
-            # TODO: Add a scene to use the default question set!! For now we always need the referee to manually add all questions
             question_set = s.decode_defaults_or_define_questions(
                 referee_socket.recv(256))
             referee_socket.sendall(s.encode_ack(
@@ -182,11 +177,11 @@ class Server:
             logger.info("Disconnecting %s (referee)", socket_addr)
             self.__state.remove_referee()
 
-    #
-    # Broadcast messages to players when enforcing strict synchronization in certain stages.
-    # i.e., no other messages should arrive / be sent during the broadcast
-    #
     def broadcast_with_ack(self, summary: str, encoded_message: bytes):
+        #
+        # Broadcast messages to players when enforcing strict synchronization in certain stages.
+        # i.e., no other messages should arrive / be sent during the broadcast
+        #
         player_sockets = self.__state.get_all_player_sockets_with_locks()
         for name, player_socket, lock in player_sockets:
             with lock:
@@ -196,14 +191,11 @@ class Server:
                 _ack = s.decode_ack(player_socket.recv(1024))  # Receiving ack
                 logger.info(
                     "Sync - Broadcasted {%s} to Player {%s}", summary, name)
-                # TODO: keep it safe in one lock -> otherwise the player_listnere might grab the lock and message won't be recognized
-                # TODO: but we should try to mae it more concurrent
-                # TODO: Try to move the broacasting questions and game start to each player thread? use barriers??
 
-    #
-    # Broadcast messages to players when there's no need to hear back from players.
-    #
     def broadcast_without_ack(self, summary: str, encoded_message: bytes):
+        #
+        # Broadcast messages to players when there's no need to hear back from players.
+        #
         player_sockets = self.__state.get_all_player_sockets_with_locks()
         for name, player_socket, lock in player_sockets:
             with lock:

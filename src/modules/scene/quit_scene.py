@@ -16,9 +16,6 @@ class QuitScene(AbstractScene):
 
             self.get_screen().fill("white")
 
-            # self.get_utils().draw_results(
-            #     button_border, self.get_player_state().get_leadersboard(), len(self.get_player_state().get_questions()))
-
             self.get_utils().create_prompt("Thanks for playing!",
                                            (0, self.get_screen().get_height() // 8))
 

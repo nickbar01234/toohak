@@ -16,8 +16,6 @@ class GameState(Enum):
 
 class PlayerState:
     def __init__(self):
-
-        # TODO - Change type hint for network
         self.__name = None
 
         self.__questions: list[Question] = []
@@ -37,14 +35,12 @@ class PlayerState:
         self.referee_barrier = threading.Semaphore(0)
         self.is_game_end = False
 
-        # TODO(nickbar01234) - Should this state be here?
         self.__is_player = True
 
     def get_name(self):
         return self.__name
 
     def set_name(self, name: Name):
-        # TODO - Send server
         if not isinstance(name, str):
             raise RuntimeError(
                 f"Expect name to be of type str, but received type {type(name)}")
@@ -66,7 +62,6 @@ class PlayerState:
         return self.__progress
 
     def set_progress(self, correctness: bool):
-        # TODO - Send server
         if not isinstance(correctness, bool):
             raise RuntimeError(
                 f"Expect name to be of type boolean, but received type {type(correctness)}")
