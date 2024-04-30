@@ -32,7 +32,6 @@ class ServerState:
         self.__game_starts = threading.Semaphore(0)
         self.__game_ends = threading.Semaphore(0)
 
-        # TODO: change later to receive from the referee: default / customized
         self.__questions = []
         self.__questions_lock = threading.Lock()
 

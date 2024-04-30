@@ -10,9 +10,6 @@ from ..type.aliases import *
 from ..question.multiple_choice_question_builder import MultipleChoiceQuestionBuilder
 from ..solution.multiple_choice_solution_builder import MultipleChoiceSolutionBuilder
 
-# TODO: review all questions added?
-# TODO: enforce a solution has to be selected?
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
 
@@ -27,10 +24,8 @@ class AddQuestionScene(AbstractScene):
         self.__create_add_box()
 
         self.senders: list[threading.Thread] = []
-        # TODO: create a variable / way to store and prompt the solution!
 
     def start_scene(self):
-        # TODO(nickbar01234) - Need to extract into a input class
         clock = pg.time.Clock()
         while True:
             for event in pg.event.get():
@@ -60,7 +55,6 @@ class AddQuestionScene(AbstractScene):
 
             self.__question_prompt.draw()
             _ = [p.draw() for p in self.__option_prompts]
-            # TODO: draw solution input
 
             pg.display.flip()
             clock.tick(STYLE["fps"])
@@ -133,8 +127,3 @@ class AddQuestionScene(AbstractScene):
             PromptInput(self.get_screen(), "Option D: ", dimension=(
                 512, 64), top_y=435, top_x=right_x, add_check_box=True),
         ]
-
-    def __submit(self):
-        # logger.info("Referee submits questions")
-        # TODO: broadcast the start game signal to all players
-        print("Referee submits questions")

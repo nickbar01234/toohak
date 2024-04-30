@@ -10,6 +10,7 @@ class MonitorScene(AbstractScene):
             for event in pg.event.get():
                 self.handle_quit(event)
 
+            # render graphics
             self.get_screen().fill("lightgreen")
             text_surface = STYLE["font"]["title"].render(
                 "Monitoring Leaderboard...", True, (0, 0, 0))

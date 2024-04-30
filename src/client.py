@@ -18,8 +18,6 @@ class Client:
         scene = SceneState.ENTRY
 
         SCENES = {
-            # TODO: EntryScene can remove network -> get from player's self.state
-            # SceneState.ENTRY: AddQuestionScene(screen, self.state, self.network),
             SceneState.ENTRY: EntryScene(screen, self.state, self.network),
             SceneState.ROLE_SELECTION: RoleSelectionScene(screen, self.state, self.network),
 

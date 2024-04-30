@@ -68,3 +68,7 @@ Let’s go through each directory / file by their functionality:
 > ⚠️ The server needs to be restarted after completing 1 round.
 
 > ⚠️ Players can't join mid-game.
+
+## Roadmap
+
+We've listed some TODOs the codebase, which we will address if given time.
